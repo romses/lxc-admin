@@ -41,14 +41,31 @@ def index():
     t=[]
     t.append(time.time())
 
-    return render_template('index.tmpl',data=duration(t))
+    return render_template('content.html',data=duration(t))
+#    return render_template('layout.html',data=duration(t))
 
-@app.route('/api/container')
+""" API Functions """	
+
+@app.route('/api/<type>')
 @requires_auth
-def container():
+def api(type):
+    l=lib.container(options)
+
     if request.method=="GET":
-        l=lib.container(options)
-        return Response(l.list(),mimetype="application/json")
+        if type=="container":
+            return Response(l.list(),mimetype="application/json")
+        elif type=="user":
+            return Response(json.dumps({}),mimetype="application/json")
+        elif type=="domain":
+            return Response(json.dumps({}),mimetype="application/json")
+        elif type=="database":
+            return Response(json.dumps({}),mimetype="application/json")
+        elif type=="backup":
+            return Response(json.dumps({}),mimetype="application/json")
+        elif type=="admin":
+            return Response(json.dumps({}),mimetype="application/json")
+        else:
+            return Response(json.dumpe({'status':'Error','extstatus':'service not defined'}),mimetype="application/json")
     else:
         print("not implemented")
 
@@ -56,7 +73,7 @@ def container():
 
 @app.route('/api/container/<name>',methods=['GET', 'POST','DELETE'])
 @requires_auth
-def namedcontainer(name):
+def apinamedcontainer(name):
     l=lib.container(options)
     if request.method=="GET":
         return render_template('container.tmpl')
@@ -80,6 +97,7 @@ def namedcontainer(name):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    print("Try to login")
     t=[]
     t.append(time.time())
     session.pop('logged_in', None)
@@ -105,10 +123,12 @@ def login():
                 rows = cur.fetchall()
                 flash('You were logged in')
                 con.close()
+                print("Redirecting to Index")
                 return redirect(url_for('index'))
             elif(bcrypt.hashpw(request.form['password'], rows[0][0]) == rows[0][0]):
                 flash('You were logged in')
                 con.close()
+                print("Redirecting to Index")
                 return redirect(url_for('index'))
             else:
                 logging.info('Login error')
@@ -116,10 +136,12 @@ def login():
                 session.pop('last',None)
                 session.pop('user',None)
 
+    print("Render Template login.tmpl")
     return render_template('login.html', error=error,data={'durationTotal':duration(t)})
 
 @app.route('/logout')
 def logout():
+    print("Try to logout")
     session.pop('logged_in', None)
     session.pop('last', None)
     session.pop('user',None)
