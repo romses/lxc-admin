@@ -46,9 +46,11 @@ function containerfunctions(){
   var req = null;
   $('#containerCreationType').bind('change', newContainerMode);
   $('#name').bind('input', newContainerName);
-  $("#clone").css("display","block");
-  $('#action').attr("disabled","disabled");
-  $("#action").click(function(){
+  $('#doublebutton2-0').removeAttr('disabled');
+  $('#clone').css('display','block');
+  $('#action').attr('disabled','disabled');
+
+  $('#action').click(function(){
     if($('#containerCreationType').val()=="clone"){
       req={
         "type":"clone",
@@ -63,16 +65,25 @@ function containerfunctions(){
         },
       };
     }
-    console.log(req);
-    console.log($("#name").val());
+
+    $("#action").attr("disabled","disabled");
+    $("#doublebutton2-0").attr("disabled","disabled");
+    $("#action2").addClass("glyphicon glyphicon-refresh spinning");
     $.ajax({
       url:"/api/container/"+$("#name").val(),
       method:"PUT",
       data:req,
     }).done(function(data){
-      console.log(data);
+
+
+
+      $("#action2").removeClass("glyphicon glyphicon-refresh spinning");
       $("#addContainer").modal('hide');
     }).error(function(){
+
+
+
+      $("#action2").removeClass("glyphicon glyphicon-refresh spinning");
       $("#addContainer").modal('hide');
     });
   });
@@ -89,6 +100,8 @@ function containerfunctions(){
 
 
 function clearContainer(){
+  $('#doublebutton2-0').removeAttr('disabled');
+
   $.getJSON("/api/images",function(data){
     containerimages=data.data;
     setSystems();
@@ -109,7 +122,6 @@ function clearContainer(){
 }
 
 function newContainerName(){
-  console.log("newContainerName");
   if($("#name").val()==""){
     $("#action").attr("disabled","disabled");
   }else{
