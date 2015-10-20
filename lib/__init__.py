@@ -2,6 +2,7 @@
 
 import lxc
 import json
+import urllib
 import time
 
 class container:
@@ -33,6 +34,12 @@ class container:
             a.append(c)
         return json.dumps(a)
 
+    def create(self,name,data):
+        print("PRE CREATING")
+        time.sleep(5)
+        print("POST CREATING")
+        return json.dumps({'status':'Ok','extstatus':'Container created'})
+
     def delete(self,name):
         time.sleep(5)
         return json.dumps({'status':'Ok','extstatus':'Container deleted'})
@@ -53,6 +60,25 @@ class container:
         time.sleep(5)
         return json.dumps({'status':'Ok','extstatus':'Container stopped'})
 
+    def images(self):
+        try:
+            f=urllib.request.urlopen(self.options['IMAGE_URL'])
+            lines=f.readlines()
+            jsondata={}
+
+            for line in lines:
+                dist=line.decode().split(";")[0]
+                release=line.decode().split(";")[1]
+                arch=line.decode().split(";")[2]
+                if dist not in jsondata.keys():
+                    jsondata[dist]={}
+                if release not in jsondata[dist].keys():
+                    jsondata[dist][release]=[]
+                if arch in ("amd64","i386"):
+                    jsondata[dist][release].append(arch)
+            return json.dumps({'status':'Ok','extstatus':'','data':jsondata})
+        except:
+            return json.dumps({'status':'Error','extstatus':'Error retrieving images from repository '+self.options['IMAGE_URL'],'data':""})
 
 class user:
     """User Abstraction"""

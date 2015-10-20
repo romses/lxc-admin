@@ -1,0 +1,122 @@
+<div class="row">
+  <div class="col-md-12">
+    <table id="containertable" class="table table-striped">
+      <thead>
+        <tr>
+          <th>Name</th><th>State</th><th>IP</th><th>Mem. Usage</th><th>Actions</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <%
+          _.each(items,function(item,key,list){
+          visible="visibility:hidden";
+          status="success";
+          if(item.warnings.length>0){
+            visible="visibility:visible"
+            status="warning";
+          }
+          if(item.status=="STOPPED"){
+            status="danger";
+          }
+        %>
+        <tr class="<%= status %>">
+          <td><a href="/container/<%= item.data.name %>"><%= item.data.name %></a></td>
+          <td><%= item.status %></td>
+          <td><%= item.data.ip[0]%></td>
+          <td><%= item.data.mem %></td>
+          <td>
+            <div class="btn-group-xs btn-group" role="group" aria-label="Center">
+              <button type="button" class="btn btn-primary" aria-label="Left Align" onclick="start('<%= item.data.name %>')">
+                <span class="glyphicon glyphicon glyphicon-play" aria-hidden="true"></span>
+              </button>
+              <button type="button" class="btn btn-primary" aria-label="Left Align" onclick="stop('<%= item.data.name %>')">
+                <span class="glyphicon glyphicon glyphicon-stop" aria-hidden="true"></span>
+              </button>
+              <button type="button" class="btn btn-primary" aria-label="Left Align" onclick="backup('<%= item.data.name %>');">
+                <span class="glyphicon glyphicon glyphicon-save" aria-hidden="true"></span>
+              </button>
+              <button type="button" class="btn btn-danger" aria-label="Left Align" onclick="del('<%= item.data.name%>');">
+                <span class="glyphicon glyphicon glyphicon-trash" aria-hidden="true"></span>
+              </button>
+            </div>
+          </td>
+          <td><span class="glyphicon glyphicon-warning-sign" data-placement="bottom" style="<%= visible%>" title="<%= item.warnings%>" data-toggle="tooltip"></span></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <button type="button" class="btn btn-xs btn-primary" aria-label="Left Align" data-toggle="modal" data-target="#addContainer" onclick="clearContainer()">add Container</button>
+  </div>
+</div>
+
+<!-- Modal -->
+
+<div class="modal fade" id="addContainer" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <!-- Form Name -->
+        <legend>Add Container</legend>
+      </div>
+      <div class="modal-body">
+        <form role="form" class="download">
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input id="name" name="name" type="text" placeholder="Name" class="input-xlarge form-control" maxlength="25">
+          </div>
+          <div class="form-group">
+            <label for="containerCreationType">Type</label>
+            <select id="containerCreationType" name="type" size="1" class="input-xlarge form-control">
+              <option id="containerClone"    value="clone" selected>Clone</option>
+              <option id="containerDownload" value="download">download</option>
+            </select>
+          </div>
+          <div id="clone" style="display:none">
+            <div class="form-group">
+              <label for="clonefrom">Clone from</label>
+              <select id="clonefrom" name="system" size="1" class="input-xlarge form-control">
+              <!-- Option-Tags werden dynamisch hinzugefügt -->
+              </select>
+            </div>
+
+          </div>
+          <div id="download" style="display:none">
+            <div class="form-group">
+              <label for="system">Operating system</label>
+              <select id="system" name="system" size="1" class="input-xlarge form-control">
+                <!-- Option-Tags werden dynamisch hinzugefügt -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="version">Version</label>
+              <select id="version" name="version" size="1" class="input-xlarge form-control">
+                <!-- Option-Tags werden dynamisch hinzugefügt -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="architecture">Architecture</label>
+              <select id="architecture" name="architecture" size="1" class="input-xlarge form-control">
+                <!-- Option-Tags werden dynamisch hinzugefügt -->
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <!-- Button (Double) -->
+        <div class="control-group">
+          <label class="control-label" for="action"></label>
+          <div class="controls">
+            <button id="action" name="action" class="btn btn-primary">Save</button>
+            <button id="doublebutton2-0" name="doublebutton2-0" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

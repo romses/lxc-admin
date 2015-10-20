@@ -80,13 +80,6 @@ h2              { font-size: 1.2em; }
     right: 10px;
 }
 
-#system, #version, #architecture {
-    display: none;
-    width: 165px;
-    margin-top: 20px;
-    margin-right: 20px;
-    float: left;
-}
 
 #type {
     margin-top: 20px;

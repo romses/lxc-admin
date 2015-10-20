@@ -64,14 +64,16 @@ def api(type):
             return Response(json.dumps({}),mimetype="application/json")
         elif type=="admin":
             return Response(json.dumps({}),mimetype="application/json")
+        elif type=="images":
+            return Response(l.images(),mimetype="application/json")
         else:
-            return Response(json.dumpe({'status':'Error','extstatus':'service not defined'}),mimetype="application/json")
+            return Response(json.dumps({'status':'Error','extstatus':'service not defined'}),mimetype="application/json")
     else:
         print("not implemented")
 
     return json.dumps({})
 
-@app.route('/api/container/<name>',methods=['GET', 'POST','DELETE'])
+@app.route('/api/container/<name>',methods=['GET', 'POST','DELETE','PUT'])
 @requires_auth
 def apinamedcontainer(name):
     l=lib.container(options)
@@ -90,6 +92,10 @@ def apinamedcontainer(name):
             return Response(l.start(name),mimetype="application/json")
         elif request.form['action']=="stop":
             return Response(l.stop(name),mimetype="application/json")
+    elif request.method=="PUT":
+        print("PUT: "+name)
+        print(request.form)
+        return Response(l.create(name,request.form),mimetype="application/json")
     else:
         print(request.method+" not implemented")
 
