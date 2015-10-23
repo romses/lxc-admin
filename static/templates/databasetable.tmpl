@@ -1,0 +1,104 @@
+<div class="row">
+  <div class="col-md-12">
+    <table class="entries table table-stripped">
+      <thead>
+        <tr>
+          <th>User/Database</th><th>Password</th><th>Container</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%
+          _.each(items,function(item,key,list){
+        %>
+        <tr>
+          <td><%= item.user %></td>
+          <td><%= item.password %></td>
+          <td>
+            <a href='/container/<%= item.container %>'><%= item.container %></a>
+          </td>
+          <td>
+            <div class="btn-group-xs btn-group" role="group" aria-label="Center">        
+              <button type="button" class="btn btn-primary" aria-label="Left Align" data-toggle="modal" data-target="#adddatabase" onclick='preselect(<%= JSON.stringify(item) %>)'>
+                <span class="glyphicon glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
+              </button>
+              <button type="button" class="btn btn-danger" aria-label="Left Align" onclick='del(<%= JSON.stringify(item) %>);'>
+                <span class="glyphicon glyphicon glyphicon-trash" aria-hidden="true"></span> Delete
+              </button>
+            </div>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="row>
+  <div class="col-md-12">
+    <button type="button" class="btn btn-xs btn-primary" aria-label="Left Align" data-toggle="modal" data-target="#adddatabase" onclick="cleardatabase()">add Database</button>
+  </div>
+</div>
+
+<!-- Modal Dialog -->
+<div class="modal fade" id="adddatabase" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <!-- Form Name -->
+        <legend>Add Database</legend>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="control-group">
+              <label class="control-label" for="user">Username</label>
+              <div class="controls">
+                <input id="user" name="user" type="text" placeholder="Name" class="input-xlarge form-control">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <div class="control-group">
+              <label class="control-label" for="password">Password</label>
+              <div class="controls">
+                <div class="input-group">
+                  <input id="password" name="password" type="text" placeholder="Password" class="input-xlarge form-control">
+                  <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" id="dbuserrandom">Random</button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <div class="control-group">
+              <label class="control-label" for="container">Container</label>
+              <div class="controls">
+                <select id="container" name="container" size="1" class="input-xlarge form-control" placeholder="Associated container">
+        <%
+          _.each(container,function(item,key,list){
+        %>
+                  <option value="<%= item.data.name %>"><%= item.data.name %></option>
+        <%});%>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+      <!-- Button (Double) -->
+        <div class="control-group">
+          <label class="control-label" for="action"></label>
+          <div class="controls">
+            <button id="action" name="action" class="btn btn-primary">Save</button>
+            <button id="doublebutton2-0" name="doublebutton2-0" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
