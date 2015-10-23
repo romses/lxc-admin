@@ -61,6 +61,7 @@ def api(type):
     l=lib.container(options)
     u=lib.user(options)
     d=lib.domain(options)
+    db=lib.database(options)
 
     if request.method=="GET":
         if type=="container":
@@ -70,7 +71,7 @@ def api(type):
         elif type=="domain":
             return Response(d.list(),mimetype="application/json")
         elif type=="database":
-            return Response(json.dumps({}),mimetype="application/json")
+            return Response(db.list(),mimetype="application/json")
         elif type=="backup":
             return Response(json.dumps({}),mimetype="application/json")
         elif type=="admin":
@@ -124,6 +125,40 @@ def apinameduser(name):
         print("PUT: "+name)
         print(request.form)
         return Response(u.create(name,request.form),mimetype="application/json")
+    else:
+        print(request.method+" not implemented")
+
+    return json.dumps({})
+
+@app.route('/api/domain/<name>',methods=['GET', 'POST','DELETE','PUT'])
+@requires_auth
+def apinameddomain(name):
+    d=lib.domain(options)
+    if request.method=="GET":
+        return render_template('domain.tmpl')
+    elif request.method=="DELETE":
+        return Response(d.delete(name),mimetype="application/json")
+    elif request.method=="PUT":
+        print("PUT: "+name)
+        print(request.form)
+        return Response(d.create(name,request.form),mimetype="application/json")
+    else:
+        print(request.method+" not implemented")
+
+    return json.dumps({})
+
+@app.route('/api/database/<name>',methods=['GET', 'POST','DELETE','PUT'])
+@requires_auth
+def apinameddatabase(name):
+    db=lib.database(options)
+    if request.method=="GET":
+        return render_template('database.tmpl')
+    elif request.method=="DELETE":
+        return Response(db.delete(name),mimetype="application/json")
+    elif request.method=="PUT":
+        print("PUT: "+name)
+        print(request.form)
+        return Response(db.create(name,request.form),mimetype="application/json")
     else:
         print(request.method+" not implemented")
 

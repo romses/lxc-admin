@@ -35,33 +35,26 @@ class container:
         return json.dumps(a)
 
     def create(self,name,data):
-        print("PRE CREATING")
         time.sleep(5)
-        print("POST CREATING")
         return json.dumps({'status':'Ok','extstatus':'Container created'})
 
     def delete(self,name):
-        print("DELETE")
         time.sleep(5)
         return json.dumps({'status':'Ok','extstatus':'Container deleted'})
 
     def backup(self,name):
-        print("BACKUP")
         time.sleep(5)
         return json.dumps({'status':'Ok','extstatus':'Container saved'})
 
     def restore(self,name):
-        print("RESTORE")
         time.sleep(5)
         return json.dumps({'status':'Ok','extstatus':'Container restored'})
 
     def start(self,name):
-        print("START")
         time.sleep(5)
         return json.dumps({'status':'Ok','extstatus':'Container started'})
 
     def stop(self,name):
-        print("STOP")
         time.sleep(5)
         return json.dumps({'status':'Ok','extstatus':'Container stopped'})
 
@@ -93,7 +86,6 @@ class user:
         self.options=options
         self.con=pymysql.connect(options['DB_HOST'], options['DB_USERNAME'], options['DB_PASSWORD'], options['DB']);
         self.cur=self.con.cursor()
-        print("User Constructor")
 
     def list(self):
         self.cur.execute('SELECT userid,passwd,container FROM ftpuser')
@@ -123,7 +115,6 @@ class domain:
         self.options=options
         self.con=pymysql.connect(options['DB_HOST'], options['DB_USERNAME'], options['DB_PASSWORD'], options['DB']);
         self.cur=self.con.cursor()
-        print("Domain Constructor")
 
     def list(self):
         self.cur.execute('SELECT domain,www,container,crtfile FROM domains')
@@ -140,21 +131,34 @@ class domain:
 
         return json.dumps(domains)
 
-    def add(self,name):
-        return json.dumps({})
+    def create(self,name,data):
+        return json.dumps(data)
 
     def delete(self,name):
         return json.dumps({})
 
 
 class database:
-    """Database Abstraction"""
+    con=0
+    cur=0
     def __init__(self,options):
         self.options=options
-        print("Container Constructor")
+        self.con=pymysql.connect(options['DB_HOST'], options['DB_USERNAME'], options['DB_PASSWORD'], options['DB']);
+        self.cur=self.con.cursor()
 
     def list(self):
-        return json.dumps({})
+        self.cur.execute('SELECT user,password,container FROM db')
+        rows = self.cur.fetchall()
+        databases=[]
+
+        for row in rows:
+            c={'user':row[0],
+               'password':row[1],
+               'container':row[2],
+            }
+            databases.append(c)
+
+        return json.dumps(databases)
 
     def add(self,name):
         return json.dumps({})
@@ -166,7 +170,6 @@ class backup:
     """Backup Abstraction"""
     def __init__(self,options):
         self.options=options
-        print("Container Constructor")
 
     def list(self):
         return json.dumps({})

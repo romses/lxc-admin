@@ -21,7 +21,7 @@
               <button type="button" class="btn btn-primary" aria-label="Left Align" data-toggle="modal" data-target="#adduser" onclick="preselect({user:'<%= item.username %>',password:'<%= item.password %>',container:'<%= item.container %>'})">
                 <span class="glyphicon glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
               </button>
-              <button type="button" class="btn btn-danger" aria-label="Left Align" onclick="deleteuser('<%= item.username %>}}');">
+              <button type="button" class="btn btn-danger" aria-label="Left Align" onclick='del(<%= JSON.stringify(item) %>);'>
                 <span class="glyphicon glyphicon glyphicon-trash" aria-hidden="true"></span> Delete
               </button>
             </div>

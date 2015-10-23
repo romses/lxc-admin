@@ -28,17 +28,17 @@ $(document).ready(function(){
 		template=$.ajax({
 			url:"/static/templates/usertable.tmpl",
 		}).done(function(cdata){
-                        $.ajax({
-                          url:"/api/container",
-                          dataType:"json"
-                        }).done(function(container){
+			$.ajax({
+			  url:"/api/container",
+			  dataType:"json"
+			}).done(function(container){
 				template=_.template(cdata);
 				rendered=template({items:data,container:container});
 				$("#target").html(rendered);
 
 				$('#userrandom').bind('click',function(){
 					$("#password").val(randomPassword(8))
-			        });
+				});
 
 				$("#action").attr('disabled','disabled');
 
@@ -60,13 +60,14 @@ $(document).ready(function(){
 							'container':$('#container').val()
 						}
 					}).done(function(data){
+						$('#adduser').modal('toggle');
 					}).error(function(){
 
 					});
 				});
 
 
-                        });
+			});
 
 		}).error(function(){
 			$("#errorframe").html("Error loading usertemplate ");
@@ -103,4 +104,19 @@ function randomPassword(length){
     pass += chars.charAt(i);
   }
   return pass;
+}
+
+function del(data){
+	$.ajax({
+		url:'/api/user/'+data.username,
+		method:'DELETE',
+
+		data:{  'domain':data.domain,
+			'www':data.www,
+			'crtfile':data.crtfile,
+			'container':data.container
+		}
+	}).done(function(data){
+	}).error(function(){
+	});
 }
