@@ -60,6 +60,7 @@ def template(template):
 def api(type):
     l=lib.container(options)
     u=lib.user(options)
+    d=lib.domain(options)
 
     if request.method=="GET":
         if type=="container":
@@ -67,7 +68,7 @@ def api(type):
         elif type=="user":
             return Response(u.list(),mimetype="application/json")
         elif type=="domain":
-            return Response(json.dumps({}),mimetype="application/json")
+            return Response(d.list(),mimetype="application/json")
         elif type=="database":
             return Response(json.dumps({}),mimetype="application/json")
         elif type=="backup":
@@ -113,7 +114,7 @@ def apinamedcontainer(name):
 
 @app.route('/api/user/<name>',methods=['GET', 'POST','DELETE','PUT'])
 @requires_auth
-def apinameduserr(name):
+def apinameduser(name):
     u=lib.user(options)
     if request.method=="GET":
         return render_template('user.tmpl')

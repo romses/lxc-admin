@@ -117,12 +117,28 @@ class user:
 
 class domain:
     """Domain Abstraction"""
+    con=0
+    cur=0
     def __init__(self,options):
         self.options=options
+        self.con=pymysql.connect(options['DB_HOST'], options['DB_USERNAME'], options['DB_PASSWORD'], options['DB']);
+        self.cur=self.con.cursor()
         print("Domain Constructor")
 
     def list(self):
-        return json.dumps({})
+        self.cur.execute('SELECT domain,www,container,crtfile FROM domains')
+        rows = self.cur.fetchall()
+        domains=[]
+
+        for row in rows:
+            c={'domain':row[0],
+               'www':row[1],
+               'container':row[2],
+               'crtfile':row[3]
+            }
+            domains.append(c)
+
+        return json.dumps(domains)
 
     def add(self,name):
         return json.dumps({})
