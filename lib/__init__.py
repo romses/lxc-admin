@@ -4,13 +4,13 @@ import lxc
 import json
 import urllib
 import time
+import pymysql
 
 class container:
     """Container Abstraction"""
     options={}
     def __init__(self,options):
         self.options=options
-        print("Container Constructor")
 
     def list(self):
         a=[]
@@ -41,22 +41,27 @@ class container:
         return json.dumps({'status':'Ok','extstatus':'Container created'})
 
     def delete(self,name):
+        print("DELETE")
         time.sleep(5)
         return json.dumps({'status':'Ok','extstatus':'Container deleted'})
 
     def backup(self,name):
+        print("BACKUP")
         time.sleep(5)
         return json.dumps({'status':'Ok','extstatus':'Container saved'})
 
     def restore(self,name):
+        print("RESTORE")
         time.sleep(5)
         return json.dumps({'status':'Ok','extstatus':'Container restored'})
 
     def start(self,name):
+        print("START")
         time.sleep(5)
         return json.dumps({'status':'Ok','extstatus':'Container started'})
 
     def stop(self,name):
+        print("STOP")
         time.sleep(5)
         return json.dumps({'status':'Ok','extstatus':'Container stopped'})
 
@@ -82,14 +87,29 @@ class container:
 
 class user:
     """User Abstraction"""
+    con=0
+    cur=0
     def __init__(self,options):
         self.options=options
+        self.con=pymysql.connect(options['DB_HOST'], options['DB_USERNAME'], options['DB_PASSWORD'], options['DB']);
+        self.cur=self.con.cursor()
         print("User Constructor")
 
     def list(self):
-        return json.dumps({})
+        self.cur.execute('SELECT userid,passwd,container FROM ftpuser')
+        rows = self.cur.fetchall()
+        users=[]
 
-    def add(self,name):
+        for row in rows:
+            c={'username':row[0],
+               'password':row[1],
+               'container':row[2]
+            }
+            users.append(c)
+
+        return json.dumps(users)
+
+    def create(self,name,data):
         return json.dumps({})
 
     def delete(self,name):

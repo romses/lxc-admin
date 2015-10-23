@@ -41,7 +41,16 @@ def index():
     t=[]
     t.append(time.time())
 
-    return render_template('content.html',data=duration(t))
+    return render_template('container.html',data=duration(t))
+#    return render_template('layout.html',data=duration(t))
+
+@app.route('/<template>')
+@requires_auth
+def template(template):
+    t=[]
+    t.append(time.time())
+
+    return render_template(template+'.html',data=duration(t))
 #    return render_template('layout.html',data=duration(t))
 
 """ API Functions """	
@@ -50,12 +59,13 @@ def index():
 @requires_auth
 def api(type):
     l=lib.container(options)
+    u=lib.user(options)
 
     if request.method=="GET":
         if type=="container":
             return Response(l.list(),mimetype="application/json")
         elif type=="user":
-            return Response(json.dumps({}),mimetype="application/json")
+            return Response(u.list(),mimetype="application/json")
         elif type=="domain":
             return Response(json.dumps({}),mimetype="application/json")
         elif type=="database":
@@ -96,6 +106,23 @@ def apinamedcontainer(name):
         print("PUT: "+name)
         print(request.form)
         return Response(l.create(name,request.form),mimetype="application/json")
+    else:
+        print(request.method+" not implemented")
+
+    return json.dumps({})
+
+@app.route('/api/user/<name>',methods=['GET', 'POST','DELETE','PUT'])
+@requires_auth
+def apinameduserr(name):
+    u=lib.user(options)
+    if request.method=="GET":
+        return render_template('user.tmpl')
+    elif request.method=="DELETE":
+        return Response(u.delete(name),mimetype="application/json")
+    elif request.method=="PUT":
+        print("PUT: "+name)
+        print(request.form)
+        return Response(u.create(name,request.form),mimetype="application/json")
     else:
         print(request.method+" not implemented")
 
@@ -192,6 +219,12 @@ def parse_config(filename):
     options['SESSION_EXPIRE']=int(eval(options['SESSION_EXPIRE']))
 
     return options
+
+@app.errorhandler(404)
+def file_not_found(error):
+    print(error)
+    print(request.path)
+    return Response(json.dumps({"Error":"","Path":request.path}),mimetype="application/json"),404
 
 def duration(t_):
     r={}
