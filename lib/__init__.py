@@ -5,6 +5,7 @@ import json
 import urllib
 import time
 import pymysql
+import os
 
 class container:
     """Container Abstraction"""
@@ -172,7 +173,16 @@ class backup:
         self.options=options
 
     def list(self):
-        return json.dumps({})
+        backups=[]
+        for path in os.listdir(self.options['BACKUPPATH']):
+            for file in os.listdir(self.options['BACKUPPATH']+"/"+path):
+                b={'container':path,
+                   'date':file.split(".")[0],
+                   'size':os.stat(self.options['BACKUPPATH']+"/"+path+"/"+file).st_size,
+                }
+                backups.append(b)
+
+        return json.dumps(backups)
 
     def add(self,name):
         return json.dumps({})
@@ -188,10 +198,20 @@ class admin:
     """Backup Abstraction"""
     def __init__(self,options):
         self.options=options
-        print("admin Constructor")
+        self.con=pymysql.connect(options['DB_HOST'], options['DB_USERNAME'], options['DB_PASSWORD'], options['DB']);
+        self.cur=self.con.cursor()
 
     def list(self):
-        return json.dumps({})
+        self.cur.execute('SELECT user FROM users')
+        rows = self.cur.fetchall()
+        user=[]
+
+        for row in rows:
+            c={'user':row[0]
+            }
+            user.append(c)
+
+        return json.dumps(user)
 
     def add(self,name):
         return json.dumps({})

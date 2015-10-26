@@ -62,6 +62,8 @@ def api(type):
     u=lib.user(options)
     d=lib.domain(options)
     db=lib.database(options)
+    b=lib.backup(options)
+    a=lib.admin(options)
 
     if request.method=="GET":
         if type=="container":
@@ -73,9 +75,9 @@ def api(type):
         elif type=="database":
             return Response(db.list(),mimetype="application/json")
         elif type=="backup":
-            return Response(json.dumps({}),mimetype="application/json")
+            return Response(b.list(),mimetype="application/json")
         elif type=="admin":
-            return Response(json.dumps({}),mimetype="application/json")
+            return Response(a.list(),mimetype="application/json")
         elif type=="images":
             return Response(l.images(),mimetype="application/json")
         else:

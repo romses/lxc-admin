@@ -36,6 +36,11 @@ $(document).ready(function(){
 				});
 
 
+                                $('#randompw').bind('click',function(){
+                                        $("#password").val(randomPassword(8))
+                                });
+
+
 				$("#action").bind('click',function(){
 					$.ajax({
 						url:'/api/domain/'+$('#domain').val(),
@@ -68,7 +73,7 @@ function preselect(data){
 	$('#password').val("");
 	$('#container').val("");
 	$("#action").attr("disabled","disabled");
-console.log(data);
+
 	if(data){
 		if('user' in data){
 			if(data['user']!=""){
@@ -86,7 +91,6 @@ console.log(data);
 }
 
 function del(data){
-console.log(data);
 	$.ajax({
 		url:'/api/database/'+data.user,
 		method:'DELETE',
@@ -94,4 +98,15 @@ console.log(data);
 	}).done(function(data){
 	}).error(function(){
 	});
+}
+
+function randomPassword(length){
+  chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+  pass = "";
+  for(x=0;x<length;x++)
+  {
+    i = Math.floor(Math.random() * 62);
+    pass += chars.charAt(i);
+  }
+  return pass;
 }

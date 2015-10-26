@@ -1,9 +1,9 @@
-<div class="row">
-  <div class="col-md-12">
+<div id="row">
+  <div id="col-ms-12">
     <table class="entries table table-stripped">
       <thead>
         <tr>
-          <th>User/Database</th><th>Password</th><th>Container</th><th>Actions</th>
+          <th>User</th><th>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -12,13 +12,9 @@
         %>
         <tr>
           <td><%= item.user %></td>
-          <td><%= item.password %></td>
-          <td>
-            <a href='/container/<%= item.container %>'><%= item.container %></a>
-          </td>
           <td>
             <div class="btn-group-xs btn-group" role="group" aria-label="Center">        
-              <button type="button" class="btn btn-primary" aria-label="Left Align" data-toggle="modal" data-target="#adddatabase" onclick='preselect(<%= JSON.stringify(item) %>)'>
+              <button type="button" class="btn btn-primary" aria-label="Left Align" data-toggle="modal" data-target="#adduser" onclick='preselect(<%= JSON.stringify(item) %>)'>
                 <span class="glyphicon glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
               </button>
               <button type="button" class="btn btn-danger" aria-label="Left Align" onclick='del(<%= JSON.stringify(item) %>);'>
@@ -26,33 +22,34 @@
               </button>
             </div>
           </td>
+       <% }); %>
         </tr>
-        <% }); %>
       </tbody>
     </table>
   </div>
 </div>
-<div class="row>
-  <div class="col-md-12">
-    <button type="button" class="btn btn-xs btn-primary" aria-label="Left Align" data-toggle="modal" data-target="#adddatabase" onclick="cleardatabase()">add Database</button>
+<div id="row">
+  <div id="col-ms-12">
+    <button type="button" class="btn btn-xs btn-primary" aria-label="Left Align" data-toggle="modal" data-target="#adduser" onclick="preselect()">new Admin</button>
   </div>
 </div>
 
 <!-- Modal Dialog -->
-<div class="modal fade" id="adddatabase" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true" style="display: none;">
+
+<div class="modal fade" id="adduser" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
         <!-- Form Name -->
-        <legend>Add Database</legend>
+        <legend>Add Admin</legend>
       </div>
       <div class="modal-body">
         <div class="row">
           <div class="col-md-12">
             <div class="control-group">
-              <label class="control-label" for="user">Username</label>
+              <label class="control-label" for="user">User</label>
               <div class="controls">
-                <input id="user" name="user" type="text" placeholder="Name" class="input-xlarge form-control">
+                <input id="user" name="user" type="text" placeholder="username" class="input-xlarge form-control">
               </div>
             </div>
           </div>
@@ -60,30 +57,14 @@
         <div class="row">
           <div class="col-md-12">
             <div class="control-group">
-              <label class="control-label" for="password">Password</label>
+              <label class="control-label" for="password">Certificate</label>
               <div class="controls">
                 <div class="input-group">
-                  <input id="password" name="password" type="text" placeholder="Password" class="input-xlarge form-control">
+                  <input id="password" name="password" placeholder="Password" class="input-xlarge form-control"></input>
                   <span class="input-group-btn">
                     <button type="button" class="btn btn-default" id="randompw">Random</button>
                   </span>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-12">
-            <div class="control-group">
-              <label class="control-label" for="container">Container</label>
-              <div class="controls">
-                <select id="container" name="container" size="1" class="input-xlarge form-control" placeholder="Associated container">
-        <%
-          _.each(container,function(item,key,list){
-        %>
-                  <option value="<%= item.data.name %>"><%= item.data.name %></option>
-        <%});%>
-                </select>
               </div>
             </div>
           </div>

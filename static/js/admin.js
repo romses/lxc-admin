@@ -1,16 +1,5 @@
 // User specific initialisations
 
-function clearuser() {
-		$('#user').html('');
-		$('#password').html('');
-	
-}
-
-//	$("#action").attr('disabled','disabled');
-//	$("#action").click(function(){
-		
-
-
 $(document).ready(function(){
 	$("#mnuContainer").removeClass("active");
 	$("#mnuUser").removeClass("active");
@@ -18,27 +7,23 @@ $(document).ready(function(){
 	$("#mnuDatabases").removeClass("active");
 	$("#mnuBackups").removeClass("active");
 	$("#mnuAdmins").removeClass("active");
-	$("#mnuUser").addClass("active");
+	$("#mnuAdmins").addClass("active");
 
 	$.ajax({
-		url:"/api/user",
+		url:"/api/admin",
 		method:"GET",
 		dataType:"json"
 	}).done(function(data){
 		template=$.ajax({
-			url:"/static/templates/usertable.tmpl",
+			url:"/static/templates/admintable.tmpl",
 		}).done(function(cdata){
-			$.ajax({
-			  url:"/api/container",
-			  dataType:"json"
-			}).done(function(container){
+                        $.ajax({
+                          url:"/api/container",
+                          dataType:"json"
+                        }).done(function(container){
 				template=_.template(cdata);
 				rendered=template({items:data,container:container});
 				$("#target").html(rendered);
-
-				$('#randompw').bind('click',function(){
-					$("#password").val(randomPassword(8))
-				});
 
 				$("#action").attr('disabled','disabled');
 
@@ -50,24 +35,28 @@ $(document).ready(function(){
 					}
 				});
 
+                                $('#randompw').bind('click',function(){
+                                        $("#password").val(randomPassword(8))
+                                });
 
 				$("#action").bind('click',function(){
 					$.ajax({
-						url:'/api/user/'+$('#user').val(),
+						url:'/api/domain/'+$('#domain').val(),
 						method:'PUT',
-						data:{	'user':$('#user').val(),
-							'password':$('#password').val(),
+						data:{	'domain':$('#domain').val(),
+							'www':$('#www').val(),
+							'crtfile':$('#certificate').val(),
 							'container':$('#container').val()
 						}
 					}).done(function(data){
-						$('#adduser').modal('toggle');
 					}).error(function(){
 
 					});
+					$('#adddomain').modal('toggle');
 				});
 
 
-			});
+                        });
 
 		}).error(function(){
 			$("#errorframe").html("Error loading usertemplate ");
@@ -80,20 +69,33 @@ $(document).ready(function(){
 function preselect(data){
 	$('#user').val("");
 	$('#password').val("");
-	$('#container').val("");
+	$("#action").attr("disabled","disabled");
 
 	if(data){
 		if('user' in data){
+			if(data['user']!=""){
+				$("#action").removeAttr("disabled")
+			}
 			$('#user').val(data.user);
-			$("#action").removeAttr('disabled');
 		}
 		if('password' in data){
 			$('#password').val(data.password);
 		}
-		if('container' in data){
-			$('#container').val(data.container);
-		}
 	}
+}
+
+function del(data){
+	$.ajax({
+		url:'/api/domain/'+data.domain,
+		method:'DELETE',
+		data:{	'domain':data.domain,
+			'www':data.www,
+			'crtfile':data.crtfile,
+			'container':data.container
+		}
+	}).done(function(data){
+	}).error(function(){
+	});
 }
 
 function randomPassword(length){
@@ -105,19 +107,4 @@ function randomPassword(length){
     pass += chars.charAt(i);
   }
   return pass;
-}
-
-function del(data){
-	$.ajax({
-		url:'/api/user/'+data.username,
-		method:'DELETE',
-
-		data:{  'domain':data.domain,
-			'www':data.www,
-			'crtfile':data.crtfile,
-			'container':data.container
-		}
-	}).done(function(data){
-	}).error(function(){
-	});
 }
