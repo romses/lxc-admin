@@ -79,11 +79,9 @@
               <label class="control-label" for="container">Container</label>
               <div class="controls">
                 <select id="container" name="container" size="1" class="input-xlarge form-control" placeholder="Associated container">
-        <%
-          _.each(container,function(item,key,list){
-        %>
+                <% _.each(container,function(item,key,list){ %>
                   <option value="<%= item.data.name %>"><%= item.data.name %></option>
-        <%});%>
+                <%});%>
                 </select>
               </div>
             </div>

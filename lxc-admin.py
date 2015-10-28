@@ -53,6 +53,12 @@ def template(template):
     return render_template(template+'.html',data=duration(t))
 #    return render_template('layout.html',data=duration(t))
 
+@app.route('/container/<name>')
+@requires_auth
+def namedcontainer(name):
+    return render_template('containeredit.html',entries=name)
+#    return render_template('layout.html',data=duration(t))
+
 """ API Functions """	
 
 @app.route('/api/<type>')
@@ -67,19 +73,19 @@ def api(type):
 
     if request.method=="GET":
         if type=="container":
-            return Response(l.list(),mimetype="application/json")
+            return Response(json.dumps(l.list()),mimetype="application/json")
         elif type=="user":
-            return Response(u.list(),mimetype="application/json")
+            return Response(json.dumps(u.list()),mimetype="application/json")
         elif type=="domain":
-            return Response(d.list(),mimetype="application/json")
+            return Response(json.dumps(d.list()),mimetype="application/json")
         elif type=="database":
-            return Response(db.list(),mimetype="application/json")
+            return Response(json.dumps(db.list()),mimetype="application/json")
         elif type=="backup":
-            return Response(b.list(),mimetype="application/json")
+            return Response(json.dumps(b.list()),mimetype="application/json")
         elif type=="admin":
-            return Response(a.list(),mimetype="application/json")
+            return Response(json.dumps(a.list()),mimetype="application/json")
         elif type=="images":
-            return Response(l.images(),mimetype="application/json")
+            return Response(json.dumps(l.images()),mimetype="application/json")
         else:
             return Response(json.dumps({'status':'Error','extstatus':'service not defined'}),mimetype="application/json")
     else:
@@ -92,24 +98,18 @@ def api(type):
 def apinamedcontainer(name):
     l=lib.container(options)
     if request.method=="GET":
-        return render_template('container.tmpl')
+        return Response(json.dumps(l.container(name,details=True)),mimetype="application/json")
     elif request.method=="DELETE":
-        return Response(l.delete(name),mimetype="application/json")
+        return Response(json.dumps(l.delete(name)),mimetype="application/json")
     elif request.method=="POST":
-        print("request.form")
-        print(request.form)
-        print("request.form[action]")
-        print(request.form['action'])
         if request.form['action']=="backup":
-            return Response(l.backup(name),mimetype="application/json")
+            return Response(json.dumps(l.backup(name)),mimetype="application/json")
         elif request.form['action']=="start":
-            return Response(l.start(name),mimetype="application/json")
+            return Response(json.dumps(l.start(name)),mimetype="application/json")
         elif request.form['action']=="stop":
-            return Response(l.stop(name),mimetype="application/json")
+            return Response(json.dumps(l.stop(name)),mimetype="application/json")
     elif request.method=="PUT":
-        print("PUT: "+name)
-        print(request.form)
-        return Response(l.create(name,request.form),mimetype="application/json")
+        return Response(json.dumps(l.create(name,request.form)),mimetype="application/json")
     else:
         print(request.method+" not implemented")
 
@@ -122,11 +122,11 @@ def apinameduser(name):
     if request.method=="GET":
         return render_template('user.tmpl')
     elif request.method=="DELETE":
-        return Response(u.delete(name),mimetype="application/json")
+        return Response(json.dumps(u.delete(name)),mimetype="application/json")
     elif request.method=="PUT":
         print("PUT: "+name)
         print(request.form)
-        return Response(u.create(name,request.form),mimetype="application/json")
+        return Response(json.dumps(u.create(name,request.form)),mimetype="application/json")
     else:
         print(request.method+" not implemented")
 
@@ -139,11 +139,11 @@ def apinameddomain(name):
     if request.method=="GET":
         return render_template('domain.tmpl')
     elif request.method=="DELETE":
-        return Response(d.delete(name),mimetype="application/json")
+        return Response(json.dumps(d.delete(name)),mimetype="application/json")
     elif request.method=="PUT":
         print("PUT: "+name)
         print(request.form)
-        return Response(d.create(name,request.form),mimetype="application/json")
+        return Response(json.dumps(d.create(name,request.form)),mimetype="application/json")
     else:
         print(request.method+" not implemented")
 
@@ -156,15 +156,42 @@ def apinameddatabase(name):
     if request.method=="GET":
         return render_template('database.tmpl')
     elif request.method=="DELETE":
-        return Response(db.delete(name),mimetype="application/json")
+        return Response(json.dumps(db.delete(name)),mimetype="application/json")
     elif request.method=="PUT":
-        print("PUT: "+name)
-        print(request.form)
-        return Response(db.create(name,request.form),mimetype="application/json")
+        return Response(json.dumps(db.create(name,request.form)),mimetype="application/json")
     else:
         print(request.method+" not implemented")
 
     return json.dumps({})
+
+@app.route('/api/backup/<name>',methods=['GET', 'POST','DELETE','PUT'])
+@requires_auth
+def apinamedbackup(name):
+    db=lib.database(options)
+    if request.method=="GET":
+        return render_template('database.tmpl')
+    elif request.method=="DELETE":
+        return Response(json.dumps(db.delete(name)),mimetype="application/json")
+    elif request.method=="PUT":
+        return Response(json.dumps(db.create(name,request.form)),mimetype="application/json")
+    else:
+        print(request.method+" not implemented")
+
+    return json.dumps({})
+
+@app.route('/api/admin/<name>',methods=['DELETE','PUT'])
+@requires_auth
+def apinamedadmin(name):
+    a=lib.admin(options)
+    if request.method=="DELETE":
+        return Response(json.dumps(a.delete(name)),mimetype="application/json")
+    elif request.method=="PUT":
+        return Response(json.dumps(a.create(name,request.form)),mimetype="application/json")
+    else:
+        print(request.method+" not implemented")
+
+    return json.dumps({})
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

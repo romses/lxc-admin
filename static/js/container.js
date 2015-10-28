@@ -84,7 +84,6 @@ function newContainerName(){
 }
 
 function newContainerMode(){
-console.log("?");
 	if($("#containerCreationType").val()=="download"){
 		$("#download").css("display","block");
 		$("#clone").css("display","none");

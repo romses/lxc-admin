@@ -43,7 +43,7 @@ $(document).ready(function(){
 						url:'/api/domain/'+$('#domain').val(),
 						method:'PUT',
 						data:{	'domain':$('#domain').val(),
-							'www':$('#www').val(),
+							'www':$("#www").prop("checked"),
 							'crtfile':$('#certificate').val(),
 							'container':$('#container').val()
 						}
@@ -89,15 +89,34 @@ function preselect(data){
 }
 
 function del(data){
-	$.ajax({
-		url:'/api/domain/'+data.domain,
-		method:'DELETE',
-		data:{	'domain':data.domain,
-			'www':data.www,
-			'crtfile':data.crtfile,
-			'container':data.container
-		}
-	}).done(function(data){
-	}).error(function(){
-	});
+        BootstrapDialog.show({
+                message: 'Delete Domain '+data.domain+"?",
+                buttons: [{
+                        label: 'Delete',
+                        cssClass: 'btn-danger',
+                        autospin: 'true',
+                        action: function(dialogItself){
+                                $.ajax({
+                                        url:'/api/domain/'+data.domain,
+                                        method:'DELETE',
+                                        dataType:'json'
+                                }).done(function(resp){
+                                        dialogItself.close();
+                                        renderContent('container');
+                                }).error(function(resp){
+                                        dialogItself.close();
+                                        BootstrapDialog.alert({message:"Dafuq?!?"+resp.status})
+                                        $("#errorframe").html(resp.status);
+                                        renderContent('container');
+                                });
+                        }
+                }, {
+                        label: 'Cancel',
+                        cssClass: 'btn-primary',
+                        action: function(dialogItself){
+                                dialogItself.close();
+                        }
+                }]
+        });
 }
+

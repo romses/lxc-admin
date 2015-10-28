@@ -1,15 +1,4 @@
-// User specific initialisations
-
-function clearuser() {
-		$('#user').html('');
-		$('#password').html('');
-	
-}
-
-//	$("#action").attr('disabled','disabled');
-//	$("#action").click(function(){
-		
-
+var container=null;
 
 $(document).ready(function(){
 	$("#mnuContainer").removeClass("active");
@@ -18,59 +7,24 @@ $(document).ready(function(){
 	$("#mnuDatabases").removeClass("active");
 	$("#mnuBackups").removeClass("active");
 	$("#mnuAdmins").removeClass("active");
-	$("#mnuUser").addClass("active");
+	$("#mnuContainer").addClass("active");
+
+	container=$("#whoami").text().trim()
 
 	renderContent();
 });
 
 function renderContent(){
-	$.ajax({
-		url:"/api/user",
-		method:"GET",
-		dataType:"json"
-	}).done(function(data){
-		template=$.ajax({
-			url:"/static/templates/usertable.tmpl",
-		}).done(function(cdata){
-			$.ajax({
-				url:"/api/container",
-				dataType:"json"
-			}).done(function(container){
-				template=_.template(cdata);
-				rendered=template({items:data,container:container});
-
-				$("#target").html(rendered);
-					$('#randompw').bind('click',function(){
-					$("#password").val(randomPassword(8))
-				});
-
-				$("#action").attr('disabled','disabled');
-
-				$("#user").bind('input',function(){
-					if($("#user").val()==""){
-						$("#action").attr("disabled","disabled");
-					}else{
-						$("#action").removeAttr("disabled");
-					}
-				});
-
-				$("#action").bind('click',function(){
-					$.ajax({
-						url:'/api/user/'+$('#user').val(),
-						method:'PUT',
-						data:{	'user':$('#user').val(),
-							'password':$('#password').val(),
-							'container':$('#container').val()
-						}
-					}).done(function(data){
-						$('#adduser').modal('toggle');
-					}).error(function(){
-					});
-				});
-			});
-
-		}).error(function(){
-			$("#errorframe").html("Error loading usertemplate ");
+	template=$.ajax({
+		url:"/static/templates/containeredit.tmpl",
+	}).done(function(cdata){
+		$.ajax({
+			url:"/api/container/"+container,
+			dataType:"json"
+		}).done(function(data){
+			template=_.template(cdata);
+			rendered=template({container:data});
+			$("#target").html(rendered);
 		});
 	}).error(function(error){
 		$("#errorframe").html("Error loading Data /api/"+name);

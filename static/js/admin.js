@@ -9,6 +9,10 @@ $(document).ready(function(){
 	$("#mnuAdmins").removeClass("active");
 	$("#mnuAdmins").addClass("active");
 
+	renderTable();
+});
+
+function renderTable(){
 	$.ajax({
 		url:"/api/admin",
 		method:"GET",
@@ -41,18 +45,16 @@ $(document).ready(function(){
 
 				$("#action").bind('click',function(){
 					$.ajax({
-						url:'/api/domain/'+$('#domain').val(),
+						url:'/api/admin/'+$('#user').val(),
 						method:'PUT',
-						data:{	'domain':$('#domain').val(),
-							'www':$('#www').val(),
-							'crtfile':$('#certificate').val(),
-							'container':$('#container').val()
+						data:{	'user':$('#user').val(),
+							'password':$('#password').val()
 						}
 					}).done(function(data){
+						renderTable();
 					}).error(function(){
-
 					});
-					$('#adddomain').modal('toggle');
+					$('#adduser').modal('toggle');
 				});
 
 
@@ -64,7 +66,7 @@ $(document).ready(function(){
 	}).error(function(error){
 		$("#errorframe").html("Error loading Data /api/"+name);
 	});
-});
+};
 
 function preselect(data){
 	$('#user').val("");
@@ -85,26 +87,40 @@ function preselect(data){
 }
 
 function del(data){
-	$.ajax({
-		url:'/api/domain/'+data.domain,
-		method:'DELETE',
-		data:{	'domain':data.domain,
-			'www':data.www,
-			'crtfile':data.crtfile,
-			'container':data.container
-		}
-	}).done(function(data){
-	}).error(function(){
+	BootstrapDialog.show({
+		message:"Delete user "+data.user,
+		type:BootstrapDialog.TYPE_WARNING,
+		buttons:[{
+			label:"Delete",
+			cssClass:"btn-danger",
+			action:function(dialogItself){
+				$.ajax({
+					url:'/api/admin/'+data.user,
+					method:'DELETE',
+				}).done(function(cdata){
+					if(cdata.status=="Error"){
+						BootstrapDialog.alert({message:"Error deleting "+data.user,type:BootstrapDialog.TYPE_WARNING});
+					}
+				});
+				renderTable();
+				dialogItself.close();
+			}
+		},{
+			label:"Cancel",
+			cssClass:"btn-primary",
+			action: function(dialogItself){
+				dialogItself.close();
+			}
+		}]
 	});
 }
 
 function randomPassword(length){
-  chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-  pass = "";
-  for(x=0;x<length;x++)
-  {
-    i = Math.floor(Math.random() * 62);
-    pass += chars.charAt(i);
-  }
-  return pass;
+	chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+	pass = "";
+	for(x=0;x<length;x++){
+		i = Math.floor(Math.random() * 62);
+		pass += chars.charAt(i);
+	}
+	return pass;
 }

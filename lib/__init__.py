@@ -6,6 +6,7 @@ import urllib
 import time
 import pymysql
 import os
+import bcrypt
 
 class container:
     """Container Abstraction"""
@@ -15,49 +16,61 @@ class container:
 
     def list(self):
         a=[]
-        for container in lxc.list_containers():
-            _container=lxc.Container(container)
-            warnings=[]
-            if _container.running:
-                ip=_container.get_ips()
-            else:
-                ip=[]
-            c={
-               "status":_container.state,
-               "extstatus":"",
-               "data":{
-                   "name":_container.name,
-                   "ip":ip,
-                   "mem":"0"
-               },
-               "warnings":warnings
-              }
+        for _container in lxc.list_containers():
+            c=self.container(_container,details=False)
             a.append(c)
-        return json.dumps(a)
+        return a
+
+    def container(self,name,details):
+        _container=lxc.Container(name)
+        warnings=[]
+        if _container.running:
+            ip=_container.get_ips()
+        else:
+            ip=[]
+        c={
+           "status":_container.state,
+           "extstatus":"",
+           "data":{
+               "name":_container.name,
+               "ip":ip,
+               "mem":"0"
+           },
+           "warnings":warnings
+          }
+        if(details==True):
+            u=user(self.options)
+            d=domain(self.options)
+            db=database(self.options)
+            c['user']=u.list(name)
+            c['domain']=d.list(name)
+            c['database']=db.list(name)
+
+        return(c)
 
     def create(self,name,data):
         time.sleep(5)
-        return json.dumps({'status':'Ok','extstatus':'Container created'})
+        return {'status':'Ok','extstatus':'Container created'}
 
     def delete(self,name):
         time.sleep(5)
-        return json.dumps({'status':'Ok','extstatus':'Container deleted'})
+        return {'status':'Ok','extstatus':'Container deleted'}
 
     def backup(self,name):
         time.sleep(5)
-        return json.dumps({'status':'Ok','extstatus':'Container saved'})
+        return {'status':'Ok','extstatus':'Container saved'}
 
     def restore(self,name):
         time.sleep(5)
-        return json.dumps({'status':'Ok','extstatus':'Container restored'})
+        return {'status':'Ok','extstatus':'Container restored'}
 
     def start(self,name):
         time.sleep(5)
-        return json.dumps({'status':'Ok','extstatus':'Container started'})
+        return {'status':'Ok','extstatus':'Container started'}
 
     def stop(self,name):
         time.sleep(5)
-        return json.dumps({'status':'Ok','extstatus':'Container stopped'})
+        return {'status':'Ok','extstatus':'Container stopped'}
 
     def images(self):
         try:
@@ -75,9 +88,9 @@ class container:
                     jsondata[dist][release]=[]
                 if arch in ("amd64","i386"):
                     jsondata[dist][release].append(arch)
-            return json.dumps({'status':'Ok','extstatus':'','data':jsondata})
+            return {'status':'Ok','extstatus':'','data':jsondata}
         except:
-            return json.dumps({'status':'Error','extstatus':'Error retrieving images from repository '+self.options['IMAGE_URL'],'data':""})
+            return {'status':'Error','extstatus':'Error retrieving images from repository '+self.options['IMAGE_URL'],'data':""}
 
 class user:
     """User Abstraction"""
@@ -88,8 +101,13 @@ class user:
         self.con=pymysql.connect(options['DB_HOST'], options['DB_USERNAME'], options['DB_PASSWORD'], options['DB']);
         self.cur=self.con.cursor()
 
-    def list(self):
-        self.cur.execute('SELECT userid,passwd,container FROM ftpuser')
+    def list(self,name=""):
+        print("Appending user "+name)
+        if(name==""):
+            self.cur.execute('SELECT userid,passwd,container FROM ftpuser')
+        else:
+            self.cur.execute('SELECT userid,passwd,container FROM ftpuser where container=%s',name)
+
         rows = self.cur.fetchall()
         users=[]
 
@@ -100,13 +118,13 @@ class user:
             }
             users.append(c)
 
-        return json.dumps(users)
+        return users
 
     def create(self,name,data):
-        return json.dumps({})
+        return {}
 
     def delete(self,name):
-        return json.dumps({})
+        return {}
 
 class domain:
     """Domain Abstraction"""
@@ -117,8 +135,12 @@ class domain:
         self.con=pymysql.connect(options['DB_HOST'], options['DB_USERNAME'], options['DB_PASSWORD'], options['DB']);
         self.cur=self.con.cursor()
 
-    def list(self):
-        self.cur.execute('SELECT domain,www,container,crtfile FROM domains')
+    def list(self,name=""):
+        if(name==""):
+            self.cur.execute('SELECT domain,www,container,crtfile FROM domains')
+        else:
+            self.cur.execute('SELECT domain,www,container,crtfile FROM domains where container =%s',name)
+
         rows = self.cur.fetchall()
         domains=[]
 
@@ -130,13 +152,13 @@ class domain:
             }
             domains.append(c)
 
-        return json.dumps(domains)
+        return domains
 
     def create(self,name,data):
-        return json.dumps(data)
+        return data
 
     def delete(self,name):
-        return json.dumps({})
+        return {}
 
 
 class database:
@@ -147,8 +169,13 @@ class database:
         self.con=pymysql.connect(options['DB_HOST'], options['DB_USERNAME'], options['DB_PASSWORD'], options['DB']);
         self.cur=self.con.cursor()
 
-    def list(self):
-        self.cur.execute('SELECT user,password,container FROM db')
+    def list(self,name=""):
+        if(name==""):
+            self.cur.execute('SELECT user,password,container FROM db')
+        else:
+            self.cur.execute('SELECT user,password,container FROM db where container=%s',name)
+
+
         rows = self.cur.fetchall()
         databases=[]
 
@@ -159,13 +186,13 @@ class database:
             }
             databases.append(c)
 
-        return json.dumps(databases)
+        return databases
 
-    def add(self,name):
-        return json.dumps({})
+    def create(self,name):
+        return {}
 
     def delete(self,name):
-        return json.dumps({})
+        return {}
 
 class backup:
     """Backup Abstraction"""
@@ -182,16 +209,16 @@ class backup:
                 }
                 backups.append(b)
 
-        return json.dumps(backups)
+        return backups
 
-    def add(self,name):
-        return json.dumps({})
+    def create(self,name):
+        return {}
 
     def delete(self,name):
-        return json.dumps({})
+        return {}
 
     def restore(self,name,date):
-        return json.dumps({})
+        return {}
 
 
 class admin:
@@ -211,10 +238,27 @@ class admin:
             }
             user.append(c)
 
-        return json.dumps(user)
+        return user
 
-    def add(self,name):
-        return json.dumps({})
+    def create(self,name,data):
+        if('password' in data):
+            password=bcrypt.hashpw(data['password'],bcrypt.gensalt())
+        else:
+            return json.dumps({"status":"Error", "extstatus":"Password must not be empty"})
+
+        if('password' not in data):
+            return json.dumps({"status":"Error", "extstatus":"Username must not be empty"})
+
+        self.cur.execute('INSERT INTO users (user,password) VALUES (%s,%s) ON DUPLICATE KEY UPDATE password=VALUES(password)',(data['user'],password))
+        self.con.commit()
+
+        return {"status":"Ok","extstatus":"User "+data['user']+" added"}
 
     def delete(self,name):
-        return json.dumps({})
+        try:
+            self.cur.execute('DELETE FROM users WHERE user=%s',(name))
+            self.con.commit()
+            return {"status":"Ok","extstatus":"User "+name+" deleted"}
+
+        except pymysql.Error as e:
+            return {"status":"Error","extstatus":"Error deleting "+name}
