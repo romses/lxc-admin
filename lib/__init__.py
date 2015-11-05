@@ -180,7 +180,7 @@ class database:
         databases=[]
 
         for row in rows:
-            c={'user':row[0],
+            c={'username':row[0],
                'password':row[1],
                'container':row[2],
             }
@@ -188,7 +188,7 @@ class database:
 
         return databases
 
-    def create(self,name):
+    def create(self,name,data):
         return {}
 
     def delete(self,name):

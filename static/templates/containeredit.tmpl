@@ -20,16 +20,16 @@
               <td><%= container.data.mem %> Mib</td>
               <td>
                 <div class="btn-group-xs btn-group" role="group" aria-label="Center">
-                  <button type="button" class="btn btn-primary" aria-label="Left Align" onclick="start('<%= container.data.name %>')">
+                  <button type="button" class="btn btn-primary" aria-label="Left Align" onclick=start('<%= container.data.name %>')>
                     <span class="glyphicon glyphicon glyphicon-play" aria-hidden="true"></span>
                   </button>
-                  <button type="button" class="btn btn-primary" aria-label="Left Align" onclick="stop('<%= container.data.name %>')">
+                  <button type="button" class="btn btn-primary" aria-label="Left Align" onclick=stop('<%= container.data.name %>')>
                     <span class="glyphicon glyphicon glyphicon-stop" aria-hidden="true"></span>
                   </button>
-                  <button type="button" class="btn btn-primary" aria-label="Left Align" onclick="backup('<%= container.data.name %>');">
+                  <button type="button" class="btn btn-primary" aria-label="Left Align" onclick=backup('<%= container.data.name %>');>
                     <span class="glyphicon glyphicon glyphicon-save" aria-hidden="true"></span>
                   </button>
-                  <button type="button" class="btn btn-danger" aria-label="Left Align" onclick="del('<%= container.data.name %>');">
+                  <button type="button" class="btn btn-danger" aria-label="Left Align" onclick=del('<%= container.data.name %>');>
                     <span class="glyphicon glyphicon glyphicon-trash" aria-hidden="true"></span>
                   </button>
                 </div>
@@ -61,10 +61,10 @@
               <td><%= item.password %> </td>
               <td>
                 <div class="btn-group" role="group" aria-label="...">
-                  <button type="button" class="btn btn-xs btn-primary" data-toggle="modal" onclick="preselect(<%= JSON.stringify(item) %>)">
+                  <button type="button" class="btn btn-xs btn-primary" data-toggle="modal" data-target="#adduser" onclick=preselect($("#userform"),'<%= JSON.stringify(item) %>')>
                     <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
                   </button>
-                  <button type="button" class="btn btn-xs btn-danger" onclick="delete(<%= JSON.stringify(item) %>);">
+                  <button type="button" class="btn btn-xs btn-danger" onclick="deleteUser('<%= item.username %>');">
                     <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete
                   </button>
                 </div>
@@ -73,7 +73,7 @@
             <% }); %>
           </table>
           <div class="spacer">
-            <button type="button" class="btn btn-primary" aria-label="Left Align" data-toggle="modal" data-target="#adduser" onclick=clearuser('{{entries.name}}')>
+            <button type="button" class="btn btn-primary" aria-label="Left Align" data-toggle="modal" data-target="#adduser" onclick=preselect($("#userform"),'{}')>
               <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add User
             </button>
           </div>
@@ -110,8 +110,7 @@
       <% } %>
               <td>
                 <div class="btn-group" role="group" aria-label="...">
-                  <button type="button" class="btn btn-xs btn-primary" data-toggle="modal" data-target="#adddomain" 
-                   onclick="editdomain('{{ entry[0] }}','{{ entry[1] }}','{{entry[2] }}','{{ entries.name }}')">
+                  <button type="button" class="btn btn-xs btn-primary" data-toggle="modal" data-target="#adddomain" onclick=preselect($("#domainform"),'<%= JSON.stringify(item) %>')>
                     <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
                   </button>
                   <button type="button" class="btn btn-xs btn-danger" onclick="confirm('Delete domain {{ entry[0] }}',function(){location.href='/domain/delete/{{ entry[0] }}'});">
@@ -123,7 +122,7 @@
             <% }); %>
           </table>
           <div class="spacer">
-            <button type="button" class="btn btn-primary" aria-label="Left Align" data-toggle="modal" data-target="#adddomain" onclick=cleardomain('{{entries.name}}')>
+            <button type="button" class="btn btn-primary" aria-label="Left Align" data-toggle="modal" data-target="#adddomain" onclick=preselect($("#userform"),'{}')>
               <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add Domain
             </button>
           </div>
@@ -150,7 +149,7 @@
               <td><%= item.password %></td>
               <td>
                 <div class="btn-group" role="group" aria-label="...">
-                  <button type="button" class="btn btn-xs btn-primary" data-toggle="modal" data-target="#adddatabase" onclick="editdatabase('{{ entry[0] }}','{{ entry[1] }}','{{entries.name}}')">
+                  <button type="button" class="btn btn-xs btn-primary" data-toggle="modal" data-target="#adddatabase" onclick=preselect($("#userform"),'<%= JSON.stringify(item) %>')>
                     <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
                   </button>
                   <button type="button" class="btn btn-xs btn-danger" onclick="confirm('Delete database {{ entry[0] }}',function(){location.href='/database/delete/{{ entry[0] }}'});">
@@ -162,7 +161,7 @@
       <%})%>
           </table>
           <div class="spacer">
-            <button type="button" class="btn btn-primary" aria-label="Left Align" data-toggle="modal" data-target="#adddatabase" onclick=cleardatabase('{{entries.name}}')>
+            <button type="button" class="btn btn-primary" aria-label="Left Align" data-toggle="modal" data-target="#adddatabase" onclick=preselect($("#databaseform"),'{}')>
               <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add Database
             </button>
           </div>
@@ -179,55 +178,54 @@
   </div> <!-- row 5 -->
 </div>
 
+
 <!-- Modal Dialoges -->
 
 <div class="modal fade" id="adduser" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form action="/user/add" method="post" id="userform">
-        <div class="modal-header">
-          <!-- Form Name -->
-          <legend>Add User</legend>
+      <div class="modal-header">
+        <!-- Form Name -->
+        <legend>Add User</legend>
+      </div>
+      <div class="modal-body" id="userform">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="control-group">
+              <label class="control-label" for="user">Username</label>
+              <div class="controls">
+                <input name="user" type="text" placeholder="Username" class="input-xlarge form-control username">
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-md-12">
-              <div class="control-group">
-                <label class="control-label" for="user">Username</label>
-                <div class="controls">
-                  <input id="user" name="user" type="text" placeholder="Username" class="input-xlarge form-control">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="control-group">
+              <label class="control-label" for="password">Password</label>
+              <div class="controls">
+                <div class="input-group">                    
+                  <input name="password" type="text" placeholder="Password" class="pwd input-xlarge form-control">
+                  <span class="input-group-btn">
+                    <button type="button" class="btn btn-default rndbutton">Random</button>
+                  </span>
                 </div>
               </div>
             </div>
           </div>
-          <div class="row">
-            <div class="col-md-12">
-              <div class="control-group">
-                <label class="control-label" for="password">Password</label>
-                <div class="controls">
-                  <div class="input-group">                    
-                    <input id="password" name="password" type="text" placeholder="Password" class="input-xlarge form-control">
-                    <span class="input-group-btn">
-                      <button type="button" class="btn btn-default" id="userrandom">Random</button>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-           </div>
         </div>
-        <input type="hidden" id="container" name="container">
-        <div class="modal-footer">
-        <!-- Button (Double) -->
-          <div class="control-group">
-            <label class="control-label" for="action"></label>
-            <div class="controls">
-              <button id="action" name="action" class="btn btn-primary">Save</button>
-              <button id="doublebutton2-0" name="doublebutton2-0" class="btn btn-danger" data-dismiss="modal">Cancel</button>
-            </div>
+      </div>
+      <input type="hidden" id="container" name="container">
+      <div class="modal-footer">
+      <!-- Button (Double) -->
+        <div class="control-group">
+          <label class="control-label" for="action"></label>
+          <div class="controls">
+            <button id="saveuser" name="action" class="btn btn-primary">Save</button>
+            <button name="cancel" class="cancelbutton btn btn-danger" data-dismiss="modal">Cancel</button>
           </div>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 </div>
@@ -236,16 +234,15 @@
 <div class="modal fade" id="adddomain" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form action="/domain/add" method="post" id="domainform">
-        <div class="modal-header">
-          <!-- Form Name -->
-          <legend>Add Domain</legend>
-        </div>
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-md-8">
-              <div class="control-group">
-               <label class="control-label" for="user">Domain</label>
+      <div class="modal-header">
+        <!-- Form Name -->
+        <legend>Add Domain</legend>
+      </div>
+      <div class="modal-body domainform">
+        <div class="row">
+          <div class="col-md-8">
+            <div class="control-group">
+              <label class="control-label" for="user">Domain</label>
                 <div class="controls">
                   <input id="domain" name="domain" type="text" placeholder="domain.tld" class="input-xlarge form-control">
                 </div>
@@ -270,69 +267,68 @@
           </div>
         </div>
         <div class="modal-footer">
-        <!-- Button (Double) -->
+          <!-- Button (Double) -->
           <div class="control-group">
             <label class="control-label" for="action"></label>
             <div class="controls">
-              <button id="action" name="action" class="btn btn-primary">Save</button>
-              <button id="doublebutton2-0" name="doublebutton2-0" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+              <button id="savedomain" name="action" class="btn btn-primary">Save</button>
+              <button name="cancel" class="cancelbutton btn btn-danger" data-dismiss="modal">Cancel</button>
             </div>
           </div>
         </div>
         <input id="container" name="container" type="hidden" placeholder="Associated container" class="input-xlarge form-control">
-      </form>
     </div>
   </div>
 </div>
 
 
-<div class="modal fade" id="adddatabase" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form action="/database/add" method="post" id="databaseform">
-        <div class="modal-header">
-          <!-- Form Name -->
-          <legend>Add Database</legend>
-        </div>
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-md-12">
-              <div class="control-group">
-                <label class="control-label" for="user">User/Database</label>
-                <div class="controls">
-                  <input id="user" name="user" type="text" placeholder="Database username" class="input-xlarge form-control">
-                  <input id="container" name="container" type="hidden">
+    <div class="modal fade" id="adddatabase" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form action="/database/add" method="post" id="databaseform">
+            <div class="modal-header">
+              <!-- Form Name -->
+              <legend>Add Database</legend>
+            </div>
+            <div class="modal-body" id="databaseform">
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="control-group">
+                    <label class="control-label" for="user">User/Database</label>
+                    <div class="controls">
+                      <input id="user" name="user" type="text" placeholder="Database username" class="input-xlarge form-control">
+                      <input id="container" name="container" type="hidden">
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <div class="control-group">
-                <label class="control-label" for="password">Password</label>
-                <div class="controls">
-                  <div class="input-group">
-                    <input id="dbpassword" name="password" type="text" placeholder="Password" class="input-xlarge form-control">
-                    <span class="input-group-btn">
-                      <button type="button" class="btn btn-default" id="dbuserrandom">Random</button>
-                    </span>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="control-group">
+                    <label class="control-label" for="password">Password</label>
+                    <div class="controls">
+                      <div class="input-group">
+                        <input name="password" type="text" placeholder="Password" class="pwd input-xlarge form-control">
+                        <span class="input-group-btn">
+                          <button type="button" class="btn btn-default rndbutton" >Random</button>
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-        <!-- Button (Double) -->
-          <div class="control-group">
-            <label class="control-label" for="action"></label>
-            <div class="controls">
-              <button id="action" name="action" class="btn btn-primary">Save</button>
-              <button id="doublebutton2-0" name="doublebutton2-0" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            <div class="modal-footer">
+            <!-- Button (Double) -->
+              <div class="control-group">
+                <label class="control-label" for="action"></label>
+                <div class="controls">
+                  <button id="action" name="action" class="btn btn-primary">Save</button>
+                  <button id="doublebutton2-0" name="doublebutton2-0" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                </div>
+              </div>
             </div>
-          </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
-  </div>
-</div>

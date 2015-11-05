@@ -1,4 +1,5 @@
 var container=null;
+var templatedata=null;
 
 $(document).ready(function(){
 	$("#mnuContainer").removeClass("active");
@@ -11,47 +12,102 @@ $(document).ready(function(){
 
 	container=$("#whoami").text().trim()
 
-	renderContent();
-});
-
-function renderContent(){
 	template=$.ajax({
 		url:"/static/templates/containeredit.tmpl",
 	}).done(function(cdata){
-		$.ajax({
-			url:"/api/container/"+container,
-			dataType:"json"
-		}).done(function(data){
-			template=_.template(cdata);
-			rendered=template({container:data});
-			$("#target").html(rendered);
-		});
+		templatedata=cdata;
+		renderContent();
 	}).error(function(error){
 		$("#errorframe").html("Error loading Data /api/"+name);
 	});
+});
 
+function renderContent(){
+console.log("Redraw");
+	$("#target").html("");
+	$.ajax({
+		url:"/api/container/"+container,
+		dataType:"json"
+	}).done(function(data){
+		template=_.template(templatedata);
+		rendered=template({container:data});
+
+		$("#target").html(rendered);
+		$("#www").bootstrapSwitch();
+
+		$(".rndbutton").click(function(){
+			$(".pwd").val(randomPassword(8));
+		});
+
+		$("#saveuser").click(function(){
+			$.ajax({
+				url:'/api/user/'+$('#adduser .username').val(),
+				method:'PUT',
+				data:{  'user':$('#adduser .username').val(),
+					'password':$('#adduser .pwd').val(),
+					'container':$("#whoami").text().trim()
+				}
+			}).done(function(data){
+				location.href=location.href;
+			}).error(function(){
+			});
+		});
+	});
 }
 
-function preselect(data){
-	$('#user').val("");
-	$('#password').val("");
-	$('#container').val("");
-	$('#action').attr('disabled','disabled');
-	$('#container option:first-child').attr("selected", "selected");
+function preselect($form,data){
+	data=jQuery.parseJSON(data);
 
-	if(data){
-		if('user' in data){
-			$('#user').val(data.user);
-			$("#action").removeAttr('disabled');
-		}
-		if('password' in data){
-			$('#password').val(data.password);
-		}
-		if('container' in data){
-			$('#container').val(data.container);
-		}
+console.log(data);
+
+	if('username' in data){
+		$("#adduser .username").val(data.username);
+		$("#saveuser").removeAttr("disabled");
+		$("#adduser .username").attr("disabled","disabled");
+	}else{
+		$("#adduser .username").val("");
+		$("#saveuser").attr("disabled","disabled");
+		$("#adduser .username").removeAttr("disabled");
 	}
+
+	if('password' in data){
+		$(".pwd").val(data.password);
+	}else{
+		$(".pwd").val("");
+	}
+
+	if('domain' in data){
+		$('#domain').val(data.domain);
+		$("#savedomain").removeAttr("disabled");
+		$("#domain").attr("disabled","disabled");
+	}else{
+		$('#domain').val("");
+		$("#savedomain").attr("disabled","disabled");
+		$("#domain").removeAttr("disabled");
+	}
+
+	$("#adduser .username").bind('input',function(){
+		if($("#adduser .username").val()==""){
+			$("#saveuser").attr("disabled","disabled");
+		}else{
+			$("#saveuser").removeAttr("disabled");
+		}
+
+	});
+
+	$("#domain").bind('input',function(){
+		if($("#domain").val()==""){
+			$("#savedomain").attr("disabled","disabled");
+		}else{
+			$("#savedomain").removeAttr("disabled");
+		}
+
+	});
+
+
 }
+
+
 
 function randomPassword(length){
 	chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";

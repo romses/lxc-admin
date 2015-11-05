@@ -11,7 +11,7 @@
           _.each(items,function(item,key,list){
         %>
         <tr>
-          <td><%= item.user %></td>
+          <td><%= item.username %></td>
           <td><%= item.password %></td>
           <td>
             <a href='/container/<%= item.container %>'><%= item.container %></a>
@@ -52,7 +52,7 @@
             <div class="control-group">
               <label class="control-label" for="user">Username</label>
               <div class="controls">
-                <input id="user" name="user" type="text" placeholder="Name" class="input-xlarge form-control">
+                <input id="username" name="user" type="text" placeholder="Name" class="input-xlarge form-control">
               </div>
             </div>
           </div>

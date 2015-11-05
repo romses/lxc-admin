@@ -43,18 +43,17 @@ $(document).ready(function(){
 
 				$("#action").bind('click',function(){
 					$.ajax({
-						url:'/api/domain/'+$('#domain').val(),
+						url:'/api/database/'+$('#username').val(),
 						method:'PUT',
-						data:{	'domain':$('#domain').val(),
-							'www':$('#www').val(),
-							'crtfile':$('#certificate').val(),
+						data:{	'domain':$('#username').val(),
+							'password':$('#password').val(),
 							'container':$('#container').val()
 						}
 					}).done(function(data){
 					}).error(function(){
 
 					});
-					$('#adddomain').modal('toggle');
+					$('#adddatabase').modal('toggle');
 				});
 
 
@@ -69,17 +68,17 @@ $(document).ready(function(){
 });
 
 function preselect(data){
-	$('#user').val("");
+	$('#username').val("");
 	$('#password').val("");
 	$('#container').val("");
 	$("#action").attr("disabled","disabled");
 
 	if(data){
-		if('user' in data){
+		if('username' in data){
 			if(data['user']!=""){
 				$("#action").removeAttr("disabled")
 			}
-			$('#user').val(data.user);
+			$('#username').val(data.username);
 		}
 		if('password' in data){
 			$('#password').val(data.password);
@@ -92,7 +91,7 @@ function preselect(data){
 
 function del(data){
 	$.ajax({
-		url:'/api/database/'+data.user,
+		url:'/api/database/'+data.username,
 		method:'DELETE',
 		data:data
 	}).done(function(data){

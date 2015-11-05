@@ -52,7 +52,6 @@ function renderTable(){
 						}
 					}).done(function(data){
 						renderTable();
-					}).error(function(){
 					});
 					$('#adduser').modal('toggle');
 				});
