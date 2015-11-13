@@ -1,5 +1,4 @@
 var container=null;
-var templatedata=null;
 
 $(document).ready(function(){
 	$("#mnuContainer").removeClass("active");
@@ -12,63 +11,75 @@ $(document).ready(function(){
 
 	container=$("#whoami").text().trim()
 
-	template=$.ajax({
-		url:"/static/templates/containeredit.tmpl",
-	}).done(function(cdata){
-		templatedata=cdata;
-		renderContent();
-	}).error(function(error){
-		$("#errorframe").html("Error loading Data /api/"+name);
-	});
+	enableActions();
+	renderContent();
+
+//	template=$.ajax({
+//		url:"/static/templates/containeredit.tmpl",
+//	}).done(function(cdata){
+//		templatedata=cdata;
+//		renderContent();
+//	}).error(function(error){
+//		$("#errorframe").html("Error loading Data /api/"+error);
+//	});
 });
 
 function renderContent(){
-console.log("Redraw");
 	$("#target").html("");
 	$.ajax({
 		url:"/api/container/"+container,
-		dataType:"json"
+		dataType:"json",
 	}).done(function(data){
-		template=_.template(templatedata);
-		rendered=template({container:data});
+		template=$.ajax({
+			url:"/static/templates/ftpuser.tmpl",
+		}).done(function(cdata){
+			template=_.template(cdata);
+			rendered=template({container:data});
+			$("#ftpuser tbody").html(rendered);
+		});
+		template=$.ajax({
+			url:"/static/templates/domains.tmpl",
+		}).done(function(cdata){
+			template=_.template(cdata);
+			rendered=template({container:data});
+			$("#domains tbody").html(rendered);
+		});
+		template=$.ajax({
+			url:"/static/templates/databases.tmpl",
+		}).done(function(cdata){
+			template=_.template(cdata);
+			rendered=template({container:data});
+			$("#databases tbody").html(rendered);
+		});
 
-		$("#target").html(rendered);
+//		template=_.template(templatedata);
+//		rendered=template({container:data});
+
 		$("#www").bootstrapSwitch();
 
 		$(".rndbutton").click(function(){
 			$(".pwd").val(randomPassword(8));
 		});
-
-		$("#saveuser").click(function(){
-			$.ajax({
-				url:'/api/user/'+$('#adduser .username').val(),
-				method:'PUT',
-				data:{  'user':$('#adduser .username').val(),
-					'password':$('#adduser .pwd').val(),
-					'container':$("#whoami").text().trim()
-				}
-			}).done(function(data){
-				location.href=location.href;
-			}).error(function(){
-			});
-		});
 	});
+console.log("Redraw done");
 }
 
 function preselect($form,data){
+	$form.modal('show')
 	data=jQuery.parseJSON(data);
 
-console.log(data);
+	$(".savebtn").attr("disabled","disabled");
+	$(".username").attr("disabled","disabled");
+	$("#domain").attr("disabled","disabled");
 
 	if('username' in data){
-		$("#adduser .username").val(data.username);
-		$("#saveuser").removeAttr("disabled");
-		$("#adduser .username").attr("disabled","disabled");
+		$(".username").val(data.username);
+		$(".savebtn").removeAttr("disabled");
 	}else{
-		$("#adduser .username").val("");
-		$("#saveuser").attr("disabled","disabled");
-		$("#adduser .username").removeAttr("disabled");
+		$(".username").val("");
+		$(".username").removeAttr("disabled");
 	}
+
 
 	if('password' in data){
 		$(".pwd").val(data.password);
@@ -78,14 +89,29 @@ console.log(data);
 
 	if('domain' in data){
 		$('#domain').val(data.domain);
-		$("#savedomain").removeAttr("disabled");
-		$("#domain").attr("disabled","disabled");
+		$(".savebtn").removeAttr("disabled");
 	}else{
 		$('#domain').val("");
-		$("#savedomain").attr("disabled","disabled");
 		$("#domain").removeAttr("disabled");
 	}
 
+	if(data.www==1){
+		$("#www").bootstrapSwitch('state', true);
+        }else{
+		$("#www").bootstrapSwitch('state', false);
+        }
+
+	if('crtfile' in data){
+		if(data.crtfile==""){
+			$("#certificate").val("");
+		}else{
+			$("#certificate").val("CERT");
+		}
+        }else{
+		$("#certificate").val("");
+        }
+}
+function enableActions(){
 	$("#adduser .username").bind('input',function(){
 		if($("#adduser .username").val()==""){
 			$("#saveuser").attr("disabled","disabled");
@@ -104,7 +130,63 @@ console.log(data);
 
 	});
 
+	$("#adddatabase .username").bind('input',function(){
+		if($("#adddatabase .username").val()==""){
+			$("#savedatabase").attr("disabled","disabled");
+		}else{
+			$("#savedatabase").removeAttr("disabled");
+		}
 
+	});
+
+	$("#saveuser").click(function(){
+		$("#saveuser span").removeClass("hidden");
+		$.ajax({
+			url:'/api/user/'+$('#adduser .username').val(),
+			method:'PUT',
+			data:{  'user':$('#adduser .username').val(),
+				'password':$('#adduser .pwd').val(),
+				'container':$("#whoami").text().trim()
+			}
+		}).done(function(data){
+			$('.modal').modal('hide');
+			$("#saveuser span").addClass("hidden");
+			renderContent();
+		}).error(function(){
+		});
+	});
+
+	$("#savedomain").click(function(){
+		$.ajax({
+			url:'/api/domain/'+$("#domain").val(),
+			method:"PUT",
+			data:{
+				"domain":$("#domain").val(),
+				"www":$("#www").bootstrapSwitch('state'),
+				"ssl":$("#certificate").val(),
+				"container":$("#whoami").text().trim()
+			}
+		}).done(function(){
+			location.href=location.href;
+		}).error(function(){
+		});
+	});
+
+	$("#savedatabase").click(function(){
+		$.ajax({
+			url:'/api/database/'+$('#adddatabase .username').val(),
+			method:"PUT",
+			data:{
+				"username":$('#adddatabase .username').val(),
+				"password":$('#adddatabase .pwd').val(),
+				"container":$("#whoami").text().trim()
+			}
+		}).done(function(){
+//			location.href=location.href;
+		}).error(function(){
+		});
+	});
+console.log("Binding actions done");
 }
 
 

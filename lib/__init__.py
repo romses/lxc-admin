@@ -121,9 +121,11 @@ class user:
         return users
 
     def create(self,name,data):
+        time.sleep(5)
         return {}
 
     def delete(self,name):
+        time.sleep(5)
         return {}
 
 class domain:
@@ -155,9 +157,11 @@ class domain:
         return domains
 
     def create(self,name,data):
+        time.sleep(5)
         return data
 
     def delete(self,name):
+        time.sleep(5)
         return {}
 
 
@@ -189,9 +193,11 @@ class database:
         return databases
 
     def create(self,name,data):
+        time.sleep(5)
         return {}
 
     def delete(self,name):
+        time.sleep(5)
         return {}
 
 class backup:
@@ -212,12 +218,15 @@ class backup:
         return backups
 
     def create(self,name):
+        time.sleep(5)
         return {}
 
     def delete(self,name):
+        time.sleep(5)
         return {}
 
     def restore(self,name,date):
+        time.sleep(5)
         return {}
 
 

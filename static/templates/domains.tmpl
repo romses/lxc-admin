@@ -1,0 +1,25 @@
+<% _.each(container.domain,function(item,key,list){ %>
+<tr>
+  <td><%= item.domain %></td>
+  <% if(item.www==1){ %>
+  <td><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></td>
+  <% }else{ %>
+  <td><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></td>
+  <% }; %>
+  <% if(item.crtfile == ""){ %>
+  <td><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></td>
+  <% }else{ %>
+  <td><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></td>
+  <% } %>
+  <td>
+    <div class="btn-group" role="group" aria-label="...">
+      <button type="button" class="btn btn-xs btn-primary" onclick=preselect($("#adddomain"),'<%= JSON.stringify(item) %>')>
+        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
+      </button>
+      <button type="button" class="btn btn-xs btn-danger" onclick="confirm('Delete domain {{ entry[0] }}',function(){location.href='/domain/delete/{{ entry[0] }}'});">
+        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete
+       </button>
+    </div>
+  </td>
+</tr>
+<% }); %>

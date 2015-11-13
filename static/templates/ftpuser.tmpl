@@ -1,0 +1,16 @@
+<% _.each(container.user,function(item,key,list){ %>
+<tr>
+  <td><%= item.username %></td>
+  <td><%= item.password %> </td>
+  <td>
+    <div class="btn-group" role="group" aria-label="...">
+      <button type="button" class="btn btn-xs btn-primary" onclick=preselect($("#adduser"),'<%= JSON.stringify(item) %>')>
+        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
+      </button>
+      <button type="button" class="btn btn-xs btn-danger" onclick="deleteUser('<%= item.username %>');">
+        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete
+      </button>
+    </div>
+  </td>
+</tr>
+<% }); %>

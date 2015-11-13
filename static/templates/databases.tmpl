@@ -1,0 +1,16 @@
+<% _.each(container.database,function(item,key,list){ %>
+<tr>
+  <td><%= item.username %></td>
+  <td><%= item.password %></td>
+  <td>
+    <div class="btn-group" role="group" aria-label="...">
+      <button type="button" class="btn btn-xs btn-primary" onclick=preselect($("#addatabase"),'<%= JSON.stringify(item) %>')>
+        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
+      </button>
+      <button type="button" class="btn btn-xs btn-danger" onclick="confirm('Delete database {{ entry[0] }}',function(){location.href='/database/delete/{{ entry[0] }}'});">
+        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete
+      </button>
+    </div>
+  </td>
+</tr>
+<%})%>
