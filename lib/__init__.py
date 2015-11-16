@@ -121,12 +121,31 @@ class user:
         return users
 
     def create(self,name,data):
-        time.sleep(5)
-        return {}
+        if('user' not in data):
+            return {'status':'Error','extstatus':'Username missing'}
+        if('password' not in data):
+            return {'status':'Error','extstatus':'Password missing'}
+        if('container' not in data):
+            return {'status':'Error','extstatus':'Container missing'}
+        if(data['user']=="error"):
+            return {'status':'Error','extstatus':'user triggered error'}
+
+        homedir="/var/lib/lxc/"+data['container']+"/rootfs/var/www/html/"
+        try:
+            self.cur.execute('INSERT INTO ftpuser (userid,passwd,container,homedir) VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE passwd=VALUES(passwd)',(data['user'],data['password'],data['container'],homedir))
+            self.con.commit()
+        except:
+            return {"status":"Error","extstatus":"Cannot add user "+data['user']+", Query failed"}
+
+        return {"status":"Ok","extstatus":"User added"}
 
     def delete(self,name):
-        time.sleep(5)
-        return {}
+        try:
+            self.cur.execute('DELETE FROM ftpuser where userid=%s',(name))
+            self.con.commit()
+        except:
+            return {"status":"Error","extstatus":"cannot delete user "+name+", Query failed"}
+        return {"status":"Ok","extstatus":"User deleted"}
 
 class domain:
     """Domain Abstraction"""

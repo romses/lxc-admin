@@ -7,7 +7,7 @@
       <button type="button" class="btn btn-xs btn-primary" onclick=preselect($("#adduser"),'<%= JSON.stringify(item) %>')>
         <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
       </button>
-      <button type="button" class="btn btn-xs btn-danger" onclick="deleteUser('<%= item.username %>');">
+      <button type="button" class="btn btn-xs btn-danger" onclick=deleteUser('<%= JSON.stringify(item) %>')>
         <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete
       </button>
     </div>

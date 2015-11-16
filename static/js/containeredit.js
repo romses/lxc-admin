@@ -14,14 +14,6 @@ $(document).ready(function(){
 	enableActions();
 	renderContent();
 
-//	template=$.ajax({
-//		url:"/static/templates/containeredit.tmpl",
-//	}).done(function(cdata){
-//		templatedata=cdata;
-//		renderContent();
-//	}).error(function(error){
-//		$("#errorframe").html("Error loading Data /api/"+error);
-//	});
 });
 
 function renderContent(){
@@ -52,9 +44,6 @@ function renderContent(){
 			$("#databases tbody").html(rendered);
 		});
 
-//		template=_.template(templatedata);
-//		rendered=template({container:data});
-
 		$("#www").bootstrapSwitch();
 
 		$(".rndbutton").click(function(){
@@ -65,6 +54,7 @@ console.log("Redraw done");
 }
 
 function preselect($form,data){
+	$("#saveuser span").addClass("hidden","hidden");
 	$form.modal('show')
 	data=jQuery.parseJSON(data);
 
@@ -201,7 +191,8 @@ function randomPassword(length){
 	return pass;
 }
 
-function del(data){
+function deleteUser(data){
+	data=jQuery.parseJSON(data);
 	BootstrapDialog.show({
 		message: 'Delete FTP-user '+data.username+"?",
 		buttons: [{
