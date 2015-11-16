@@ -26,9 +26,10 @@ function renderContent(){
 			url:"/static/templates/ftpuser.tmpl",
 		}).done(function(cdata){
 			template=_.template(cdata);
-			rendered=template({container:data});
+			rendered=template({container:data,user:data.user,domains:data.domains,databases:data.databases});
 			$("#ftpuser tbody").html(rendered);
 		});
+
 		template=$.ajax({
 			url:"/static/templates/domains.tmpl",
 		}).done(function(cdata){
@@ -36,6 +37,7 @@ function renderContent(){
 			rendered=template({container:data});
 			$("#domains tbody").html(rendered);
 		});
+
 		template=$.ajax({
 			url:"/static/templates/databases.tmpl",
 		}).done(function(cdata){
@@ -50,7 +52,6 @@ function renderContent(){
 			$(".pwd").val(randomPassword(8));
 		});
 	});
-console.log("Redraw done");
 }
 
 function preselect($form,data){
@@ -101,6 +102,7 @@ function preselect($form,data){
 		$("#certificate").val("");
         }
 }
+
 function enableActions(){
 	$("#adduser .username").bind('input',function(){
 		if($("#adduser .username").val()==""){

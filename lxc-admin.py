@@ -124,8 +124,6 @@ def apinameduser(name):
     elif request.method=="DELETE":
         return Response(json.dumps(u.delete(name)),mimetype="application/json")
     elif request.method=="PUT":
-        print("PUT: "+name)
-        print(request.form)
         return Response(json.dumps(u.create(name,request.form)),mimetype="application/json")
     else:
         print(request.method+" not implemented")
@@ -141,8 +139,6 @@ def apinameddomain(name):
     elif request.method=="DELETE":
         return Response(json.dumps(d.delete(name)),mimetype="application/json")
     elif request.method=="PUT":
-        print("PUT: "+name)
-        print(request.form)
         return Response(json.dumps(d.create(name,request.form)),mimetype="application/json")
     else:
         print(request.method+" not implemented")

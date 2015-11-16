@@ -1,16 +1,5 @@
 // User specific initialisations
 
-function clearuser() {
-		$('#user').html('');
-		$('#password').html('');
-	
-}
-
-//	$("#action").attr('disabled','disabled');
-//	$("#action").click(function(){
-		
-
-
 $(document).ready(function(){
 	$("#mnuContainer").removeClass("active");
 	$("#mnuUser").removeClass("active");
@@ -25,50 +14,56 @@ $(document).ready(function(){
 
 function renderContent(){
 	$.ajax({
+		url:"/api/container",
+		method:"GET"
+	}).done(function(data){
+		template=_.template('<% _.each(user,function(item,key,list){%><option value="<%= item.data.name %>"><%= item.data.name %></option><% }); %>');
+		rendered=template({user:data});
+		$("#container").html(rendered);
+	}).error(function(data){
+
+	});
+
+	$.ajax({
 		url:"/api/user",
 		method:"GET",
 		dataType:"json"
 	}).done(function(data){
 		template=$.ajax({
-			url:"/static/templates/usertable.tmpl",
+			url:"/static/templates/ftpuser.tmpl",
 		}).done(function(cdata){
-			$.ajax({
-				url:"/api/container",
-				dataType:"json"
-			}).done(function(container){
-				template=_.template(cdata);
-				rendered=template({items:data,container:container});
+			template=_.template(cdata);
+			rendered=template({user:data});
 
-				$("#target").html(rendered);
-					$('#randompw').bind('click',function(){
-					$("#password").val(randomPassword(8))
-				});
+			$("#ftpuser tbody").html(rendered);
 
-				$("#action").attr('disabled','disabled');
-
-				$("#user").bind('input',function(){
-					if($("#user").val()==""){
-						$("#action").attr("disabled","disabled");
-					}else{
-						$("#action").removeAttr("disabled");
-					}
-				});
-
-				$("#action").bind('click',function(){
-					$.ajax({
-						url:'/api/user/'+$('#user').val(),
-						method:'PUT',
-						data:{	'user':$('#user').val(),
-							'password':$('#password').val(),
-							'container':$('#container').val()
-						}
-					}).done(function(data){
-						$('#adduser').modal('toggle');
-					}).error(function(){
-					});
-				});
+			$('#randompw').bind('click',function(){
+				$("#password").val(randomPassword(8))
 			});
 
+			$("#action").attr('disabled','disabled');
+
+			$("#user").bind('input',function(){
+				if($("#user").val()==""){
+					$("#action").attr("disabled","disabled");
+				}else{
+					$("#action").removeAttr("disabled");
+				}
+			});
+
+			$("#action").bind('click',function(){
+				$.ajax({
+					url:'/api/user/'+$('#user').val(),
+					method:'PUT',
+					data:{	'user':$('#user').val(),
+						'password':$('#password').val(),
+						'container':$('#container').val()
+					}
+				}).done(function(data){
+					$('#adduser').modal('toggle');
+				}).error(function(){
+				});
+			});
 		}).error(function(){
 			$("#errorframe").html("Error loading usertemplate ");
 		});
@@ -78,26 +73,32 @@ function renderContent(){
 
 }
 
-function preselect(data){
-	$('#user').val("");
-	$('#password').val("");
-	$('#container').val("");
-	$('#action').attr('disabled','disabled');
-	$('#container option:first-child').attr("selected", "selected");
+function preselect($form,data){
+        $("#saveuser span").addClass("hidden","hidden");
+        $form.modal('show')
+        data=jQuery.parseJSON(data);
 
-	if(data){
-		if('user' in data){
-			$('#user').val(data.user);
-			$("#action").removeAttr('disabled');
-		}
-		if('password' in data){
-			$('#password').val(data.password);
-		}
-		if('container' in data){
-			$('#container').val(data.container);
-		}
-	}
+        $(".savebtn").attr("disabled","disabled");
+        $(".username").attr("disabled","disabled");
+
+        if('username' in data){
+console.log(data['username']);
+                $(".username").val(data.username);
+                $(".savebtn").removeAttr("disabled");
+        }else{
+                $(".username").val("");
+                $(".username").removeAttr("disabled");
+        }
+
+
+        if('password' in data){
+                $(".pwd").val(data.password);
+        }else{
+                $(".pwd").val("");
+        }
+
 }
+
 
 function randomPassword(length){
 	chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
