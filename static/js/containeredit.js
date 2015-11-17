@@ -153,6 +153,7 @@ function enableActions(){
 	});
 
 	$("#savedomain").click(function(){
+                $("#savedomain span").removeClass("hidden");
 		$.ajax({
 			url:'/api/domain/'+$("#domain").val(),
 			method:"PUT",
@@ -163,7 +164,9 @@ function enableActions(){
 				"container":$("#whoami").text().trim()
 			}
 		}).done(function(){
-			location.href=location.href;
+			$('.modal').modal('hide');
+			$("#savedomain span").addClass("hidden");
+			renderContent();
 		}).error(function(){
 		});
 	});
@@ -212,12 +215,46 @@ function deleteUser(data){
 					dataType:'json'
 				}).done(function(resp){
 					dialogItself.close();
-					renderContent('container');
+					renderContent();
 				}).error(function(resp){
 					dialogItself.close();
 					BootstrapDialog.alert({message:"Dafuq?!?"+resp.status})
 					$("#errorframe").html(resp.status);
-					renderContent('container');
+					renderContent();
+				});
+			}
+		}, {
+			label: 'Cancel',
+			cssClass: 'btn-primary',
+			action: function(dialogItself){
+				dialogItself.close();
+			}
+		}]
+	});
+	renderContent();
+}
+
+function deleteDomain(data){
+	data=jQuery.parseJSON(data);
+	BootstrapDialog.show({
+		message: 'Delete domain '+data.domain+"?",
+		buttons: [{
+			label: 'Delete',
+			cssClass: 'btn-danger',
+			autospin: 'true',
+			action: function(dialogItself){
+				$.ajax({
+					url:'/api/domain/'+data.domain,
+					method:'DELETE',
+					dataType:'json'
+				}).done(function(resp){
+					dialogItself.close();
+					renderContent();
+				}).error(function(resp){
+					dialogItself.close();
+					BootstrapDialog.alert({message:"Dafuq?!?"+resp.status})
+					$("#errorframe").html(resp.status);
+					renderContent();
 				});
 			}
 		}, {

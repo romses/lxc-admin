@@ -176,6 +176,28 @@ class domain:
         return domains
 
     def create(self,name,data):
+        print(json.dumps(data))
+
+        if('domain' not in data):
+            return {'status':'Error','extstatus':'domain missing'}
+        if('container' not in data):
+            return {'status':'Error','extstatus':'Container missing'}
+        if(data['domain']=="error"):
+            return {'status':'Error','extstatus':'user triggered error'}
+
+        tmpfile='/etc/haproxy/certs/'+data['domain']+".crt"
+
+        if(data['crtfile']==""):
+            if os.path.isfile(tmpfile):
+                os.remove(tmpfile)
+            tmpfile=""
+        else:
+            f=open(tmpfile,"w")
+            f.write(crt)
+            f.close()
+
+        self.cur.execute('INSERT INTO domains (domain,www,crtfile,container) VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE www=VALUES(www), crtfile=VALUES(crtfile), container=VALUES(container)',(data['domain'],data['www'],tmpfile,data['name']))
+        self.con.commit()
         time.sleep(5)
         return data
 

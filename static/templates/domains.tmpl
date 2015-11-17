@@ -16,7 +16,7 @@
       <button type="button" class="btn btn-xs btn-primary" onclick=preselect($("#adddomain"),'<%= JSON.stringify(item) %>')>
         <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
       </button>
-      <button type="button" class="btn btn-xs btn-danger" onclick="confirm('Delete domain {{ entry[0] }}',function(){location.href='/domain/delete/{{ entry[0] }}'});">
+      <button type="button" class="btn btn-xs btn-danger" onclick=deleteDomain('<%= JSON.stringify(item) %>')>
         <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete
        </button>
     </div>
