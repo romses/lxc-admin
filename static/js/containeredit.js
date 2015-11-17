@@ -22,6 +22,10 @@ function renderContent(){
 		url:"/api/container/"+container,
 		dataType:"json",
 	}).done(function(data){
+		$("#state").html(data.status);
+		$("#ip").html(data.data.ip);
+		$("#mem").html(data.data.mem);
+console.log(data);	
 		template=$.ajax({
 			url:"/static/templates/ftpuser.tmpl",
 		}).done(function(cdata){
@@ -224,4 +228,5 @@ function deleteUser(data){
 			}
 		}]
 	});
+	renderContent();
 }

@@ -10,6 +10,7 @@ $(document).ready(function(){
 	$("#mnuUser").addClass("active");
 
 	renderContent();
+	enableActions();
 });
 
 function renderContent(){
@@ -37,33 +38,8 @@ function renderContent(){
 
 			$("#ftpuser tbody").html(rendered);
 
-			$('#randompw').bind('click',function(){
-				$("#password").val(randomPassword(8))
-			});
-
 			$("#action").attr('disabled','disabled');
 
-			$("#user").bind('input',function(){
-				if($("#user").val()==""){
-					$("#action").attr("disabled","disabled");
-				}else{
-					$("#action").removeAttr("disabled");
-				}
-			});
-
-			$("#action").bind('click',function(){
-				$.ajax({
-					url:'/api/user/'+$('#user').val(),
-					method:'PUT',
-					data:{	'user':$('#user').val(),
-						'password':$('#password').val(),
-						'container':$('#container').val()
-					}
-				}).done(function(data){
-					$('#adduser').modal('toggle');
-				}).error(function(){
-				});
-			});
 		}).error(function(){
 			$("#errorframe").html("Error loading usertemplate ");
 		});
@@ -73,29 +49,59 @@ function renderContent(){
 
 }
 
+function enableActions(){
+	$('#randompw').bind('click',function(){
+		$("#password").val(randomPassword(8))
+	});
+
+
+	$("#saveuser").bind('click',function(){
+		$.ajax({
+			url:'/api/user/'+$('#user').val(),
+			method:'PUT',
+			data:{	'user':$('#user').val(),
+				'password':$('#password').val(),
+				'container':$('#container').val()
+			}
+		}).done(function(data){
+			$('#adduser').modal('toggle');
+			renderContent();
+		}).error(function(){
+		});
+	});
+
+	$("#user").bind('input',function(){
+		if($("#user").val()==""){
+			$("#action").attr("disabled","disabled");
+		}else{
+			$("#action").removeAttr("disabled");
+		}
+	});
+
+}
+
 function preselect($form,data){
-        $("#saveuser span").addClass("hidden","hidden");
-        $form.modal('show')
-        data=jQuery.parseJSON(data);
+	$("#saveuser span").addClass("hidden","hidden");
+	$form.modal('show')
+	data=jQuery.parseJSON(data);
 
-        $(".savebtn").attr("disabled","disabled");
-        $(".username").attr("disabled","disabled");
+	$(".savebtn").attr("disabled","disabled");
+	$(".username").attr("disabled","disabled");
 
-        if('username' in data){
-console.log(data['username']);
-                $(".username").val(data.username);
-                $(".savebtn").removeAttr("disabled");
-        }else{
-                $(".username").val("");
-                $(".username").removeAttr("disabled");
-        }
+	if('username' in data){
+		$(".username").val(data.username);
+		$(".savebtn").removeAttr("disabled");
+	}else{
+		$(".username").val("");
+		$(".username").removeAttr("disabled");
+	}
 
 
-        if('password' in data){
-                $(".pwd").val(data.password);
-        }else{
-                $(".pwd").val("");
-        }
+	if('password' in data){
+		$(".pwd").val(data.password);
+	}else{
+		$(".pwd").val("");
+	}
 
 }
 
@@ -110,7 +116,8 @@ function randomPassword(length){
 	return pass;
 }
 
-function del(data){
+function deleteUser(data){
+	data=jQuery.parseJSON(data);
 	BootstrapDialog.show({
 		message: 'Delete FTP-user '+data.username+"?",
 		buttons: [{
@@ -140,4 +147,6 @@ function del(data){
 			}
 		}]
 	});
+	renderContent();
 }
+
