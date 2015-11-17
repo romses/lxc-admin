@@ -176,8 +176,6 @@ class domain:
         return domains
 
     def create(self,name,data):
-        print(json.dumps(data))
-
         if('domain' not in data):
             return {'status':'Error','extstatus':'domain missing'}
         if('container' not in data):
@@ -187,19 +185,24 @@ class domain:
 
         tmpfile='/etc/haproxy/certs/'+data['domain']+".crt"
 
-        if(data['crtfile']==""):
+        print(data['ssl'])
+
+        if(data['ssl']==""):
             if os.path.isfile(tmpfile):
                 os.remove(tmpfile)
             tmpfile=""
         else:
             f=open(tmpfile,"w")
-            f.write(crt)
+            f.write(data['ssl'])
             f.close()
 
-        self.cur.execute('INSERT INTO domains (domain,www,crtfile,container) VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE www=VALUES(www), crtfile=VALUES(crtfile), container=VALUES(container)',(data['domain'],data['www'],tmpfile,data['name']))
-        self.con.commit()
-        time.sleep(5)
-        return data
+        try:
+            self.cur.execute('INSERT INTO domains (domain,www,crtfile,container) VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE www=VALUES(www), crtfile=VALUES(crtfile), container=VALUES(container)',(data['domain'],data['www'],tmpfile,data['container']))
+            self.con.commit()
+        except pymysql.Error as e:
+            return {"status":"Error","extstatus":"Query failed"}
+
+        return {"status":"Ok","extstatus":"Domain saved"}
 
     def delete(self,name):
         time.sleep(5)
