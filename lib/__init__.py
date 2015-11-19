@@ -8,6 +8,8 @@ import pymysql
 import os
 import bcrypt
 import shutil
+import base64
+import OpenSSL.crypto
 
 class container:
     """Container Abstraction"""
@@ -197,16 +199,18 @@ class domain:
 
         tmpfile='/etc/haproxy/certs/'+data['domain']+".crt"
 
-        print(data['ssl'])
 
         if(data['ssl']==""):
             if os.path.isfile(tmpfile):
                 os.remove(tmpfile)
             tmpfile=""
         else:
-            f=open(tmpfile,"w")
-            f.write(data['ssl'])
-            f.close()
+            if(self.checkCRT(name,data['ssl'])):
+                f=open(tmpfile,"w")
+                f.write(data['ssl'])
+                f.close()
+            else:
+                return{"status":"Error","extstatus":"Certificate not matching or damaged"}
 
         try:
             self.cur.execute('INSERT INTO domains (domain,www,crtfile,container) VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE www=VALUES(www), crtfile=VALUES(crtfile), container=VALUES(container)',(data['domain'],www,tmpfile,data['container']))
@@ -217,6 +221,46 @@ class domain:
         self.updateHAProxy()
 
         return {"status":"Ok","extstatus":"Domain saved"}
+
+    def checkCRT(self,domain,crt):
+        stSpam, stHam, stDump = 0, 1, 2
+        startMarkers=['-----BEGIN CERTIFICATE-----']
+        stopMarkers=['-----END CERTIFICATE-----']
+        state = stSpam
+        for line in crt.split('\n'):
+            line=line.strip()
+            if state == stSpam:
+                if line in startMarkers:
+                    certLines = []
+                    state = stHam
+                    continue
+            if state == stHam:
+                if line in stopMarkers:
+                    state = stSpam
+                    try:
+                        x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_ASN1, base64.b64decode("".join(certLines)))
+                        if(self.urlmatch(x509.get_subject().CN,domain)):
+                            return(True) # Match using CN
+                        for i in range(0,x509.get_extension_count()):
+                            extension = x509.get_extension(i)
+                            if(b'subjectAltName'==extension.get_short_name()):
+                                for token in str(extension).split(","):
+                                    if(self.urlmatch(token.split(":")[1],domain)):
+                                        return(True) # Match using DNS alternate name
+                    except Exception as e:
+                        return(False) # Cert not parsable
+
+                else:
+                    certLines.append(line)
+        return (False) # No Match
+
+    def urlmatch(self,a,b):
+        aa = a.split('.')
+        bb = b.split('.')
+        if len(aa) != len(bb): return False
+        for x, y in zip(aa, bb):
+            if not (x == y or x == '*' or y == '*'): return False
+        return True
 
     def delete(self,name):
         try:

@@ -65,27 +65,47 @@ $(document).ready(function(){
 	});
 });
 
-function preselect(data){
-	$('#domain').val("");
-	$('#certificate').val("");
-	$("#action").attr("disabled","disabled");
+function preselectDomain($form,data){
+        $form.modal('show')
+        $('#domain').val("");
+        $("#domain").removeAttr("disabled");
+        $("#www").bootstrapSwitch('state', false);
+        $("#certificate").val("");
+        $(".savebtn").attr("disabled","disabled");
 
-	if(data){
-		if('domain' in data){
-			if(data['domain']!=""){
-				$("#action").removeAttr("disabled")
-			}
-			$('#domain').val(data.domain);
-		}
-		if('www' in data){
-			$("#www").bootstrapSwitch('state', data['www']);
-		}
-		if('crtfile' in data){
-			if(data['crtfile']!=""){
-				$('#certificate').val("present");
-			}
-		}
-	}
+	$("#container").val(data);
+
+        $.ajax({
+                url:"/api/domain/"+data,
+                dataType:"json",
+        }).done(function(domains){
+                for(var i=0;i< domains.length;i++){
+                        if(domains[i].container==data){
+                                if('domain' in domains[i]){
+                                        $('#domain').val(domains[i].domain);
+                                        $(".savebtn").removeAttr("disabled");
+                                        $("#domain").attr("disabled","disabled");
+                                }
+
+                                if(domains[i].www==1){
+                                        $("#www").bootstrapSwitch('state', true);
+                                }
+
+                                if('crtfile' in domains[i]){
+                                        if(domains[i].crtfile==""){
+                                                $("#certificate").val("");
+                                        }else{
+                                                $("#certificate").val(domains[i].crtfile);
+                                        }
+                                }
+                                break;
+                        }
+                }
+
+        }).error(function(data){
+console.log("Error");
+        });
+
 }
 
 function del(data){

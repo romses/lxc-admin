@@ -82,7 +82,7 @@ function preselectDomain($form,data){
 					$("#www").bootstrapSwitch('state', true);
 			        }
 
-				if('crtfile' in domins[i]){
+				if('crtfile' in domains[i]){
 					if(domains[i].crtfile==""){
 						$("#certificate").val("");
 					}else{
