@@ -120,7 +120,7 @@ def apinamedcontainer(name):
 def apinameduser(name):
     u=lib.user(options)
     if request.method=="GET":
-        return render_template('user.tmpl')
+        return Response(json.dumps(u.list(name)),mimetype="application/json")
     elif request.method=="DELETE":
         return Response(json.dumps(u.delete(name)),mimetype="application/json")
     elif request.method=="PUT":
@@ -135,7 +135,7 @@ def apinameduser(name):
 def apinameddomain(name):
     d=lib.domain(options)
     if request.method=="GET":
-        return render_template('domain.tmpl')
+        return Response(json.dumps(d.list(name)),mimetype="application/json")
     elif request.method=="DELETE":
         return Response(json.dumps(d.delete(name)),mimetype="application/json")
     elif request.method=="PUT":

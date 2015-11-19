@@ -25,7 +25,7 @@ function renderContent(){
 		$("#state").html(data.status);
 		$("#ip").html(data.data.ip);
 		$("#mem").html(data.data.mem);
-console.log(data);	
+
 		template=$.ajax({
 			url:"/static/templates/ftpuser.tmpl",
 		}).done(function(cdata){
@@ -58,53 +58,137 @@ console.log(data);
 	});
 }
 
-function preselect($form,data){
+function preselectDomain($form,data){
+	$form.modal('show')
+	$('#domain').val("");
+	$("#domain").removeAttr("disabled");
+	$("#www").bootstrapSwitch('state', false);
+	$("#certificate").val("");
+	$(".savebtn").attr("disabled","disabled");
+
+        $.ajax({
+                url:"/api/domain/"+container,
+                dataType:"json",
+        }).done(function(domains){
+		for(var i=0;i< domains.length;i++){
+			if(domains[i].domain==data){
+				if('domain' in domains[i]){
+					$('#domain').val(domains[i].domain);
+					$(".savebtn").removeAttr("disabled");
+					$("#domain").attr("disabled","disabled");
+				}
+
+				if(domains[i].www==1){
+					$("#www").bootstrapSwitch('state', true);
+			        }
+
+				if('crtfile' in domins[i]){
+					if(domains[i].crtfile==""){
+						$("#certificate").val("");
+					}else{
+						$("#certificate").val(domains[i].crtfile);
+					}
+			        }
+				break;
+			}
+		}
+
+	}).error(function(data){
+console.log("Error");
+	});
+
+}
+
+function preselectUser($form,data){
 	$("#saveuser span").addClass("hidden","hidden");
 	$form.modal('show')
-	data=jQuery.parseJSON(data);
-
+	$(".username").val("");
+	$(".username").removeAttr("disabled");
+	$(".pwd").val("");
 	$(".savebtn").attr("disabled","disabled");
-	$(".username").attr("disabled","disabled");
-	$("#domain").attr("disabled","disabled");
 
-	if('username' in data){
-		$(".username").val(data.username);
-		$(".savebtn").removeAttr("disabled");
-	}else{
-		$(".username").val("");
-		$(".username").removeAttr("disabled");
-	}
+        $.ajax({
+                url:"/api/user/"+container,
+                dataType:"json",
+        }).done(function(user){
+		for(var i=0;i< user.length;i++){
+			if(user[i].username==data){
+
+				if('username' in user[i]){
+					$(".username").val(user[i].username);
+					$(".username").attr("disabled","disabled");
+						$(".savebtn").removeAttr("disabled");
+				}
 
 
-	if('password' in data){
-		$(".pwd").val(data.password);
-	}else{
-		$(".pwd").val("");
-	}
-
-	if('domain' in data){
-		$('#domain').val(data.domain);
-		$(".savebtn").removeAttr("disabled");
-	}else{
-		$('#domain').val("");
-		$("#domain").removeAttr("disabled");
-	}
-
-	if(data.www==1){
-		$("#www").bootstrapSwitch('state', true);
-        }else{
-		$("#www").bootstrapSwitch('state', false);
-        }
-
-	if('crtfile' in data){
-		if(data.crtfile==""){
-			$("#certificate").val("");
-		}else{
-			$("#certificate").val("CERT");
+				if('password' in user[i]){
+					$(".pwd").val(user[i].password);
+				}
+				break;
+			}
 		}
-        }else{
-		$("#certificate").val("");
-        }
+
+	}).error(function(data){
+console.log("Error");
+	});
+
+}
+
+function preselectDatabase($form,data){
+	$("#saveuser span").addClass("hidden","hidden");
+	$form.modal('show')
+	$(".username").val("");
+	$(".username").removeAttr("disabled");
+	$(".pwd").val("");
+	$('#domain').val("");
+	$("#domain").removeAttr("disabled");
+	$("#www").bootstrapSwitch('state', false);
+	$("#certificate").val("");
+	$(".savebtn").attr("disabled","disabled");
+
+        $.ajax({
+                url:"/api/domain/"+container,
+                dataType:"json",
+        }).done(function(domains){
+		for(var i=0;i< domains.length;i++){
+			if(domains[i].domain==data){
+
+				if('username' in domains[i]){
+					$(".username").val(domauns[i].username);
+					$(".username").attr("disabled","disabled");
+						$(".savebtn").removeAttr("disabled");
+				}
+
+
+				if('password' in domains[i]){
+					$(".pwd").val(domains[i].password);
+				}
+
+				if('domain' in domains[i]){
+					$('#domain').val(domains[i].domain);
+					$(".savebtn").removeAttr("disabled");
+					$("#domain").attr("disabled","disabled");
+				}
+
+				if(domains[i].www==1){
+					$("#www").bootstrapSwitch('state', true);
+			        }
+
+				if('crtfile' in domins[i]){
+					if(domains[i].crtfile==""){
+						$("#certificate").val("");
+					}else{
+						$("#certificate").val(domains[i].crtfile);
+					}
+			        }
+				break;
+			}
+		}
+
+	}).error(function(data){
+console.log("Error");
+	});
+
 }
 
 function enableActions(){
@@ -235,16 +319,16 @@ function deleteUser(data){
 }
 
 function deleteDomain(data){
-	data=jQuery.parseJSON(data);
+//	data=jQuery.parseJSON(data);
 	BootstrapDialog.show({
-		message: 'Delete domain '+data.domain+"?",
+		message: 'Delete domain '+data+"?",
 		buttons: [{
 			label: 'Delete',
 			cssClass: 'btn-danger',
 			autospin: 'true',
 			action: function(dialogItself){
 				$.ajax({
-					url:'/api/domain/'+data.domain,
+					url:'/api/domain/'+data,
 					method:'DELETE',
 					dataType:'json'
 				}).done(function(resp){

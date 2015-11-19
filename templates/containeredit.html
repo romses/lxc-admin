@@ -60,7 +60,7 @@
           </tbody>
         </table>
         <div class="spacer">
-          <button type="button" class="btn btn-primary" aria-label="Left Align" onclick=preselect($("#adduser"),'{}')>
+          <button type="button" class="btn btn-primary" aria-label="Left Align" onclick=preselectUser($("#adduser"),'{}')>
             <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add User
           </button>
         </div>
@@ -88,7 +88,7 @@
           </tbody>
         </table>
         <div class="spacer">
-          <button type="button" class="btn btn-primary" aria-label="Left Align" onclick=preselect($("#adddomain"),'{}')>
+          <button type="button" class="btn btn-primary" aria-label="Left Align" onclick=preselectDomain($("#adddomain"),'')>
             <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span> Add Domain
           </button>
         </div>
@@ -215,7 +215,7 @@
               <div class="control-group">
                 <label class="control-label" for="password">Certificate</label>
                 <div class="controls">
-                  <textarea id="certificate" name="certificate" placeholder="certifikate and key blob" class="input-xlarge form-control"></textarea>
+                  <pre><textarea id="certificate" name="certificate" placeholder="certifikate and key blob" class="input-xlarge form-control"></textarea></pre>
                 </div>
               </div>
             </div>

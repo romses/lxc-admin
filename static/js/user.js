@@ -80,28 +80,38 @@ function enableActions(){
 
 }
 
-function preselect($form,data){
-	$("#saveuser span").addClass("hidden","hidden");
-	$form.modal('show')
-	data=jQuery.parseJSON(data);
+function preselectUser($form,data){
+        $("#saveuser span").addClass("hidden","hidden");
+        $form.modal('show')
+        $(".username").val("");
+        $(".username").removeAttr("disabled");
+        $(".pwd").val("");
+        $(".savebtn").attr("disabled","disabled");
 
-	$(".savebtn").attr("disabled","disabled");
-	$(".username").attr("disabled","disabled");
+        $.ajax({
+                url:"/api/user",
+                dataType:"json",
+        }).done(function(user){
+                for(var i=0;i< user.length;i++){
+                        if(user[i].username==data){
 
-	if('username' in data){
-		$(".username").val(data.username);
-		$(".savebtn").removeAttr("disabled");
-	}else{
-		$(".username").val("");
-		$(".username").removeAttr("disabled");
-	}
+                                if('username' in user[i]){
+                                        $(".username").val(user[i].username);
+                                        $(".username").attr("disabled","disabled");
+                                                $(".savebtn").removeAttr("disabled");
+                                }
 
 
-	if('password' in data){
-		$(".pwd").val(data.password);
-	}else{
-		$(".pwd").val("");
-	}
+                                if('password' in user[i]){
+                                        $(".pwd").val(user[i].password);
+                                }
+                                break;
+                        }
+                }
+
+        }).error(function(data){
+console.log("Error");
+        });
 
 }
 
@@ -117,16 +127,16 @@ function randomPassword(length){
 }
 
 function deleteUser(data){
-	data=jQuery.parseJSON(data);
+//	data=jQuery.parseJSON(data);
 	BootstrapDialog.show({
-		message: 'Delete FTP-user '+data.username+"?",
+		message: 'Delete FTP-user '+data+"?",
 		buttons: [{
 			label: 'Delete',
 			cssClass: 'btn-danger',
 			autospin: 'true',
 			action: function(dialogItself){
 				$.ajax({
-					url:'/api/user/'+data.username,
+					url:'/api/user/'+data,
 					method:'DELETE',
 					dataType:'json'
 				}).done(function(resp){

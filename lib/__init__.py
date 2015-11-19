@@ -7,6 +7,7 @@ import time
 import pymysql
 import os
 import bcrypt
+import shutil
 
 class container:
     """Container Abstraction"""
@@ -166,22 +167,33 @@ class domain:
         domains=[]
 
         for row in rows:
+            try:
+                f=open(row[3],"r")
+                crt=f.read()
+                f.close()
+            except:
+                crt=""
             c={'domain':row[0],
                'www':row[1],
                'container':row[2],
-               'crtfile':row[3]
+               'crtfile':crt
             }
             domains.append(c)
 
         return domains
 
     def create(self,name,data):
+
+        www=0
+
         if('domain' not in data):
             return {'status':'Error','extstatus':'domain missing'}
         if('container' not in data):
             return {'status':'Error','extstatus':'Container missing'}
         if(data['domain']=="error"):
             return {'status':'Error','extstatus':'user triggered error'}
+        if(data['www']=="true"):
+            www=1
 
         tmpfile='/etc/haproxy/certs/'+data['domain']+".crt"
 
@@ -197,16 +209,91 @@ class domain:
             f.close()
 
         try:
-            self.cur.execute('INSERT INTO domains (domain,www,crtfile,container) VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE www=VALUES(www), crtfile=VALUES(crtfile), container=VALUES(container)',(data['domain'],data['www'],tmpfile,data['container']))
+            self.cur.execute('INSERT INTO domains (domain,www,crtfile,container) VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE www=VALUES(www), crtfile=VALUES(crtfile), container=VALUES(container)',(data['domain'],www,tmpfile,data['container']))
             self.con.commit()
         except pymysql.Error as e:
             return {"status":"Error","extstatus":"Query failed"}
 
+        self.updateHAProxy()
+
         return {"status":"Ok","extstatus":"Domain saved"}
 
     def delete(self,name):
-        time.sleep(5)
-        return {}
+        try:
+            self.cur.execute('DELETE FROM domains WHERE domain=%s',name)
+            self.con.commit()
+        except pymysql.Error as e:
+            return {"status":"Error","extstatus":"Query failed"}
+
+        self.updateHAProxy()
+
+        return {"status":"Ok","extstatus":"Domain "+name+" deleted"}
+
+    def updateHAProxy(self):
+        shutil.copy2('haproxy.stub', '/etc/haproxy/haproxy-test.cfg')
+
+        self.cur.execute("SELECT domain,www,crtfile,container FROM domains")
+        rows = self.cur.fetchall()
+
+        domains={}
+        ssldomains={}
+        sslcerts=[]
+        backends=[]
+
+        for row in rows:
+#            if(row[3] in lxclite.running()):
+            if( lxc.Container(row[3]).running):
+                domains[row[0]]=row[3]
+                if(row[3] not in backends):
+                    backends.append(row[3])
+                if(row[1]):
+                    domains['www.'+row[0]]=row[3]
+                if(row[2]):
+                    sslcerts.append(row[2])
+                    ssldomains[row[0]]=row[3]
+                    if(row[1]):
+                        ssldomains['www.'+row[0]]=row[3]
+
+        f=open('/etc/haproxy/domain2backend-test.map',"w")
+#Generate HTTP Frontends
+        for k in domains.keys():
+            f.write(k+" bk_"+domains[k]+"\n")
+        f.write("macftp02.macrocom.de bk_config\n")
+        f.close()
+
+        f=open("/etc/haproxy/domain2backend_ssl-test.map","w")
+        for k in ssldomains:
+#            print(k+" "+ssldomains[k])
+            f.write(k+" bk_"+ssldomains[k]+"\n")
+        f.close()
+
+        f = open("/etc/haproxy/haproxy-test.cfg","a")
+
+#Generate HTTPS Frontends
+
+        if(len(ssldomains)>0):
+            f.write("frontend https\n")
+            f.write("\tmode http\n")
+            f.write("\tbind 0.0.0.0:443 ssl")
+            for k in sslcerts:
+                f.write(" crt "+k)
+            f.write("\n\tuse_backend %[req.hdr(host),lower,map(/etc/haproxy/domain2backend_ssl.map,bk_default)]\n\n")
+
+#Generate Backends
+   
+        for k in backends:
+            f.write('backend bk_'+k+"\n")
+            f.write('\tmode http\n')
+            f.write('\tserver '+k+' '+k+'.lxc:80 check\n')
+            f.write('\n\n')
+        f.write('backend bk_config\n')
+        f.write('\tmode http\n')
+        f.write('\tserver srvdefault 127.0.0.1:'+self.options['PORT']+' check\n\n')
+
+        f.close()
+
+        return 0
+
 
 
 class database:
