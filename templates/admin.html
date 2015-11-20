@@ -1,8 +1,72 @@
 {% extends "layout.html" %}
 {% block body %}
 <script language="javascript" type="text/javascript" src="/static/js/admin.js"></script>
-<div id="target">
+<div id="row">
+  <div id="col-ms-12">
+    <table id="admins" class="entries table table-stripped">
+      <thead>
+        <tr>
+          <th>User</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
 </div>
-<div class="col-md-12" id="errorframe">
+<div id="row">
+  <div id="col-ms-12">
+    <button type="button" class="btn btn-xs btn-primary" aria-label="Left Align" onclick=preselect($("#addadmin"))>new Admin</button>
+  </div>
+</div>
+
+<!-- Modal Dialog -->
+
+<div class="modal fade" id="addadmin" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <!-- Form Name -->
+        <legend>Add Admin</legend>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="control-group">
+              <label class="control-label" for="user">User</label>
+              <div class="controls">
+                <input id="user" name="user" type="text" placeholder="username" class="input-xlarge form-control">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <div class="control-group">
+              <label class="control-label" for="password">Certificate</label>
+              <div class="controls">
+                <div class="input-group">
+                  <input id="password" name="password" placeholder="Password" class="input-xlarge form-control"></input>
+                  <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" id="randompw">Random</button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+      <!-- Button (Double) -->
+        <div class="control-group">
+          <label class="control-label" for="action"></label>
+          <div class="controls">
+            <button id="action" name="action" class="btn btn-primary">Save</button>
+            <button id="doublebutton2-0" name="doublebutton2-0" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

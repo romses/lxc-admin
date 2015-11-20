@@ -10,6 +10,7 @@ $(document).ready(function(){
 	$("#mnuAdmins").addClass("active");
 
 	renderTable();
+	enableActions();
 });
 
 function renderTable(){
@@ -18,83 +19,88 @@ function renderTable(){
 		method:"GET",
 		dataType:"json"
 	}).done(function(data){
-		template=$.ajax({
+		$.ajax({
 			url:"/static/templates/admintable.tmpl",
 		}).done(function(cdata){
-                        $.ajax({
-                          url:"/api/container",
-                          dataType:"json"
-                        }).done(function(container){
-				template=_.template(cdata);
-				rendered=template({items:data,container:container});
-				$("#target").html(rendered);
+			template=_.template(cdata);
+			rendered=template({admins:data});
 
-				$("#action").attr('disabled','disabled');
-
-				$("#user").bind('input',function(){
-					if($("#user").val()==""){
-						$("#action").attr("disabled","disabled");
-					}else{
-						$("#action").removeAttr("disabled");
-					}
-				});
-
-                                $('#randompw').bind('click',function(){
-                                        $("#password").val(randomPassword(8))
-                                });
-
-				$("#action").bind('click',function(){
-					$.ajax({
-						url:'/api/admin/'+$('#user').val(),
-						method:'PUT',
-						data:{	'user':$('#user').val(),
-							'password':$('#password').val()
-						}
-					}).done(function(data){
-						renderTable();
-					});
-					$('#adduser').modal('toggle');
-				});
-
-
-                        });
-
-		}).error(function(){
-			$("#errorframe").html("Error loading usertemplate ");
+			$("#admins tbody").html(rendered);
 		});
-	}).error(function(error){
-		$("#errorframe").html("Error loading Data /api/"+name);
 	});
-};
 
-function preselect(data){
+}
+
+function enableActions(){
+	$("#action").attr('disabled','disabled');
+
+	$("#user").bind('input',function(){
+		if($("#user").val()==""){
+			$("#action").attr("disabled","disabled");
+		}else{
+			$("#action").removeAttr("disabled");
+		}
+	});
+
+	$('#randompw').bind('click',function(){
+		$("#password").val(randomPassword(8))
+	});
+
+	$("#action").bind('click',function(){
+		$.ajax({
+			url:'/api/admin/'+$('#user').val(),
+			method:'PUT',
+			data:{	'user':$('#user').val(),
+				'password':$('#password').val()
+			}
+		}).done(function(data){
+			$('#addadmin').modal('toggle');
+			renderTable();
+		});
+	});
+}
+
+function preselect($form,data){
+	$form.modal('show');
 	$('#user').val("");
 	$('#password').val("");
 	$("#action").attr("disabled","disabled");
 
-	if(data){
-		if('user' in data){
-			if(data['user']!=""){
-				$("#action").removeAttr("disabled")
-			}
-			$('#user').val(data.user);
-		}
-		if('password' in data){
-			$('#password').val(data.password);
-		}
-	}
+        $("#saveuser span").addClass("hidden","hidden");
+        $("#user").removeAttr("disabled");
+        $("#password").val("");
+        $(".savebtn").attr("disabled","disabled");
+
+        $.ajax({
+                url:"/api/admin",
+                dataType:"json",
+        }).done(function(user){
+                for(var i=0;i< user.length;i++){
+                        if(user[i].user==data){
+                                $("#user").val(user[i].user);
+                                $("#user").attr("disabled","disabled");
+                                $("#action").removeAttr("disabled");
+
+                                break;
+                        }
+                }
+
+        }).error(function(data){
+console.log("Error");
+        });
+
 }
 
 function del(data){
 	BootstrapDialog.show({
-		message:"Delete user "+data.user,
+		message:"Delete user "+data,
 		type:BootstrapDialog.TYPE_WARNING,
 		buttons:[{
 			label:"Delete",
 			cssClass:"btn-danger",
 			action:function(dialogItself){
 				$.ajax({
-					url:'/api/admin/'+data.user,
+					url:'/api/admin/'+data,
 					method:'DELETE',
 				}).done(function(cdata){
 					if(cdata.status=="Error"){
