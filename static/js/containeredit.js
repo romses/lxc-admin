@@ -30,7 +30,7 @@ function renderContent(){
 			url:"/static/templates/ftpuser.tmpl",
 		}).done(function(cdata){
 			template=_.template(cdata);
-			rendered=template({container:data,user:data.user,domains:data.domains,databases:data.databases});
+			rendered=template({user:data.user,showcontainer:false});
 			$("#ftpuser tbody").html(rendered);
 		});
 
@@ -38,7 +38,7 @@ function renderContent(){
 			url:"/static/templates/domains.tmpl",
 		}).done(function(cdata){
 			template=_.template(cdata);
-			rendered=template({container:data});
+			rendered=template({domain:data.domain,showcontainer:false});
 			$("#domains tbody").html(rendered);
 		});
 
@@ -46,7 +46,7 @@ function renderContent(){
 			url:"/static/templates/databases.tmpl",
 		}).done(function(cdata){
 			template=_.template(cdata);
-			rendered=template({container:data});
+			rendered=template({databases:data.database,showcontainer:false});
 			$("#databases tbody").html(rendered);
 		});
 

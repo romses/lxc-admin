@@ -34,7 +34,7 @@ function renderContent(){
 			url:"/static/templates/ftpuser.tmpl",
 		}).done(function(cdata){
 			template=_.template(cdata);
-			rendered=template({user:data});
+			rendered=template({user:data,showcontainer:true});
 
 			$("#ftpuser tbody").html(rendered);
 
@@ -105,6 +105,7 @@ function preselectUser($form,data){
                                 if('password' in user[i]){
                                         $(".pwd").val(user[i].password);
                                 }
+				$("#container").val(user[i].container);
                                 break;
                         }
                 }

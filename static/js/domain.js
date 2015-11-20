@@ -9,53 +9,37 @@ $(document).ready(function(){
 	$("#mnuAdmins").removeClass("active");
 	$("#mnuDomains").addClass("active");
 
+	enableActions();
+	renderContent();
+
+});
+
+function renderContent(){
+	$.ajax({
+		url:"/api/container",
+		method:"GET"
+	}).done(function(data){
+		template=_.template('<% _.each(user,function(item,key,list){%><option value="<%= item.data.name %>"><%= item.data.name %></option><% }); %>');
+		rendered=template({user:data});
+		$("#container").html(rendered);
+	}).error(function(data){
+
+	});
+
 	$.ajax({
 		url:"/api/domain",
 		method:"GET",
 		dataType:"json"
 	}).done(function(data){
 		template=$.ajax({
-			url:"/static/templates/domaintable.tmpl",
+			url:"/static/templates/domains.tmpl",
 		}).done(function(cdata){
-                        $.ajax({
-                          url:"/api/container",
-                          dataType:"json"
-                        }).done(function(container){
-				template=_.template(cdata);
-				rendered=template({items:data,container:container});
-				$("#target").html(rendered);
+			template=_.template(cdata);
+			rendered=template({domain:data,showcontainer:true});
 
-				$(".yesnoswitch").bootstrapSwitch();
+			$("#domains tbody").html(rendered);
 
-				$("#action").attr('disabled','disabled');
-
-				$("#domain").bind('input',function(){
-					if($("#domain").val()==""){
-						$("#action").attr("disabled","disabled");
-					}else{
-						$("#action").removeAttr("disabled");
-					}
-				});
-
-
-				$("#action").bind('click',function(){
-					$.ajax({
-						url:'/api/domain/'+$('#domain').val(),
-						method:'PUT',
-						data:{	'domain':$('#domain').val(),
-							'www':$("#www").prop("checked"),
-							'crtfile':$('#certificate').val(),
-							'container':$('#container').val()
-						}
-					}).done(function(data){
-					}).error(function(){
-
-					});
-					$('#adddomain').modal('toggle');
-				});
-
-
-                        });
+			$("#action").attr('disabled','disabled');
 
 		}).error(function(){
 			$("#errorframe").html("Error loading usertemplate ");
@@ -63,7 +47,42 @@ $(document).ready(function(){
 	}).error(function(error){
 		$("#errorframe").html("Error loading Data /api/"+name);
 	});
-});
+
+}
+
+function enableActions(){
+	$(".yesnoswitch").bootstrapSwitch();
+
+	$("#action").attr('disabled','disabled');
+
+	$("#domain").bind('input',function(){
+		if($("#domain").val()==""){
+			$("#action").attr("disabled","disabled");
+		}else{
+			$("#action").removeAttr("disabled");
+		}
+	});
+
+
+	$("#savedomain").bind('click',function(){
+		$.ajax({
+			url:'/api/domain/'+$('#domain').val(),
+			method:'PUT',
+			data:{	'domain':$('#domain').val(),
+				'www':$("#www").prop("checked"),
+				'ssl':$('#certificate').val(),
+				'container':$('#container').val()
+			}
+		}).done(function(data){
+			$('#adddomain').modal('toggle');
+			renderContent();
+		}).error(function(){
+		});
+	});
+
+
+}
+
 
 function preselectDomain($form,data){
         $form.modal('show')
@@ -76,11 +95,11 @@ function preselectDomain($form,data){
 	$("#container").val(data);
 
         $.ajax({
-                url:"/api/domain/"+data,
+                url:"/api/domain",
                 dataType:"json",
         }).done(function(domains){
                 for(var i=0;i< domains.length;i++){
-                        if(domains[i].container==data){
+                        if(domains[i].domain==data){
                                 if('domain' in domains[i]){
                                         $('#domain').val(domains[i].domain);
                                         $(".savebtn").removeAttr("disabled");
@@ -98,6 +117,7 @@ function preselectDomain($form,data){
                                                 $("#certificate").val(domains[i].crtfile);
                                         }
                                 }
+				$("#container").val(domains[i].container);
                                 break;
                         }
                 }

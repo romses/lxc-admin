@@ -1,7 +1,11 @@
-<% _.each(container.database,function(item,key,list){ %>
+<% _.each(databases,function(item,key,list){ %>
 <tr>
   <td><%= item.username %></td>
   <td><%= item.password %></td>
+  <% if (showcontainer){ %>
+  <td><a href='/container/<%= item.container %>'><%= item.container %></a></td>
+  <% } %>
+
   <td>
     <div class="btn-group" role="group" aria-label="...">
       <button type="button" class="btn btn-xs btn-primary" onclick=preselect($("#addatabase"),'<%= JSON.stringify(item) %>')>
