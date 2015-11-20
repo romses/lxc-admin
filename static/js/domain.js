@@ -57,9 +57,9 @@ function enableActions(){
 
 	$("#domain").bind('input',function(){
 		if($("#domain").val()==""){
-			$("#action").attr("disabled","disabled");
+			$("#savedomain").attr("disabled","disabled");
 		}else{
-			$("#action").removeAttr("disabled");
+			$("#savedomain").removeAttr("disabled");
 		}
 	});
 
@@ -128,16 +128,16 @@ console.log("Error");
 
 }
 
-function del(data){
+function deleteDomain(data){
         BootstrapDialog.show({
-                message: 'Delete Domain '+data.domain+"?",
+                message: 'Delete Domain '+data+"?",
                 buttons: [{
                         label: 'Delete',
                         cssClass: 'btn-danger',
                         autospin: 'true',
                         action: function(dialogItself){
                                 $.ajax({
-                                        url:'/api/domain/'+data.domain,
+                                        url:'/api/domain/'+data,
                                         method:'DELETE',
                                         dataType:'json'
                                 }).done(function(resp){

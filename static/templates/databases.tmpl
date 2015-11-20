@@ -8,10 +8,10 @@
 
   <td>
     <div class="btn-group" role="group" aria-label="...">
-      <button type="button" class="btn btn-xs btn-primary" onclick=preselect($("#addatabase"),'<%= JSON.stringify(item) %>')>
+      <button type="button" class="btn btn-xs btn-primary" onclick=preselectDatabase($("#adddatabase"),'<%= item.username %>')>
         <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
       </button>
-      <button type="button" class="btn btn-xs btn-danger" onclick="confirm('Delete database {{ entry[0] }}',function(){location.href='/database/delete/{{ entry[0] }}'});">
+      <button type="button" class="btn btn-xs btn-danger" onclick=deleteDatabase('<%= item.username %>')>
         <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete
       </button>
     </div>

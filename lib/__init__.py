@@ -105,7 +105,6 @@ class user:
         self.cur=self.con.cursor()
 
     def list(self,name=""):
-        print("Appending user "+name)
         if(name==""):
             self.cur.execute('SELECT userid,passwd,container FROM ftpuser')
         else:
@@ -135,7 +134,7 @@ class user:
 
         homedir="/var/lib/lxc/"+data['container']+"/rootfs/var/www/html/"
         try:
-            self.cur.execute('INSERT INTO ftpuser (userid,passwd,container,homedir) VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE passwd=VALUES(passwd)',(data['user'],data['password'],data['container'],homedir))
+            self.cur.execute('INSERT INTO ftpuser (userid,passwd,container,homedir) VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE passwd=VALUES(passwd), container=VALUES(container)',(data['user'],data['password'],data['container'],homedir))
             self.con.commit()
         except:
             return {"status":"Error","extstatus":"Cannot add user "+data['user']+", Query failed"}
@@ -368,12 +367,76 @@ class database:
         return databases
 
     def create(self,name,data):
-        time.sleep(5)
-        return {}
+        if('username' not in data):
+            return {'status':'Error','extstatus':'username missing'}
+        if('container' not in data):
+            return {'status':'Error','extstatus':'Container missing'}
+        if(data['username']=="error"):
+            return {'status':'Error','extstatus':'user triggered error'}
+        if('password' not in data):
+            return {'status':'Error','extstatus':'Password missing'}
+        
+        try:
+            self.cur.execute('INSERT INTO db (user,password,container) VALUES (%s,%s,%s) ON DUPLICATE KEY UPDATE password=VALUES(password),container=VALUES(container)',(data['username'],data['password'],data['container']))
+            self.con.commit()
+        except pymysql.Error as e:
+            return {"status":"Error","extstatus":"Query failed"}
+
+        self.updateDatabases()
+        return {"status":"Ok","extstatus":"Databeses created"}
 
     def delete(self,name):
-        time.sleep(5)
-        return {}
+        try:
+            self.cur.execute('DELETE FROM db where user=%s',(name))
+            self.con.commit()
+        except pymysql.Error as e:
+            print(e)
+
+        try:
+            self.cur.execute("DROP DATABASE {db}".format(db=name))
+            self.con.commit()
+        except pymysql.Error as e:
+            print(e)
+        
+        return {"status":"Ok","extstatus":"Database deleted"}
+
+    def updateDatabases(self):
+        self.cur.execute("SELECT user,password,container FROM db")
+        rows = self.cur.fetchall()
+        for row in rows:    
+            print("Creating table "+row[0]);
+            try:
+                print("trying to create database "+row[0])
+                self.cur.execute("CREATE DATABASE IF NOT EXISTS {db}".format(db=row[0]))
+                self.con.commit()
+            except  mymysql.Error as e:
+                print("Creating "+row[0]+" failed")
+                print(e)
+
+            try:
+                self.cur.execute("CREATE USER %s IDENTIFIED BY %s",(row[0],row[1]))
+                self.con.commit()
+            except  pymysql.Error as e:
+                print("Warning: User existing. Trying to update password")
+                try:
+                    self.cur.execute("SET PASSWORD FOR %s@'%%' = PASSWORD(%s)",(row[0],row[1]))
+                    self.con.commit()
+                except pymysql.Error as e:
+                    print("Cannot update Password")
+                    print(e)
+
+            try:
+                self.cur.execute("GRANT USAGE on *.* TO %s@'%%' IDENTIFIED BY %s",(row[0],row[1]))
+                self.con.commit()
+            except  pymysql.Error as e:
+                print(e)
+
+            try:
+                self.cur.execute("GRANT ALL ON {user}.* TO %s@'%%' IDENTIFIED BY %s".format(user=row[0]),(row[0],row[1]))
+                self.con.commit()
+            except  pymysql.Error as e:
+                print(e)
+        return 0
 
 class backup:
     """Backup Abstraction"""

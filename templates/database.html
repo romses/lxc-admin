@@ -1,8 +1,82 @@
 {% extends "layout.html" %}
 {% block body %}
 <script language="javascript" type="text/javascript" src="/static/js/database.js"></script>
-<div id="target">
+<div class="row">
+  <div class="col-md-12">
+    <table id="databases" class="entries table table-stripped">
+      <thead>
+        <tr>
+          <th>User/Database</th><th>Password</th><th>Container</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
 </div>
-<div class="col-md-12" id="errorframe">
+<div class="row>
+  <div class="col-md-12">
+    <button type="button" class="btn btn-xs btn-primary" aria-label="Left Align" onclick=preselectDatabase($("#adddatabase"))>add Database</button>
+  </div>
+</div>
+
+<!-- Modal Dialog -->
+<div class="modal fade" id="adddatabase" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <!-- Form Name -->
+        <legend>Add Database</legend>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="control-group">
+              <label class="control-label" for="user">Username</label>
+              <div class="controls">
+                <input id="username" name="user" type="text" placeholder="Name" class="input-xlarge form-control">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <div class="control-group">
+              <label class="control-label" for="password">Password</label>
+              <div class="controls">
+                <div class="input-group">
+                  <input id="password" name="password" type="text" placeholder="Password" class="input-xlarge form-control">
+                  <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" id="randompw">Random</button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <div class="control-group">
+              <label class="control-label" for="container">Container</label>
+              <div class="controls">
+                <select id="container" name="container" size="1" class="input-xlarge form-control" placeholder="Associated container">
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+      <!-- Button (Double) -->
+        <div class="control-group">
+          <label class="control-label" for="action"></label>
+          <div class="controls">
+            <button id="savedatabase" name="action" class="savebtn btn btn-primary">Save</button>
+            <button id="doublebutton2-0" name="doublebutton2-0" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

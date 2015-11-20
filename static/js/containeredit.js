@@ -117,7 +117,7 @@ function preselectUser($form,data){
 				if('username' in user[i]){
 					$(".username").val(user[i].username);
 					$(".username").attr("disabled","disabled");
-						$(".savebtn").removeAttr("disabled");
+					$(".savebtn").removeAttr("disabled");
 				}
 
 
@@ -129,7 +129,6 @@ function preselectUser($form,data){
 		}
 
 	}).error(function(data){
-console.log("Error");
 	});
 
 }
@@ -140,47 +139,22 @@ function preselectDatabase($form,data){
 	$(".username").val("");
 	$(".username").removeAttr("disabled");
 	$(".pwd").val("");
-	$('#domain').val("");
-	$("#domain").removeAttr("disabled");
-	$("#www").bootstrapSwitch('state', false);
-	$("#certificate").val("");
 	$(".savebtn").attr("disabled","disabled");
 
         $.ajax({
-                url:"/api/domain/"+container,
+                url:"/api/database/"+container,
                 dataType:"json",
-        }).done(function(domains){
-		for(var i=0;i< domains.length;i++){
-			if(domains[i].domain==data){
-
-				if('username' in domains[i]){
-					$(".username").val(domauns[i].username);
-					$(".username").attr("disabled","disabled");
-						$(".savebtn").removeAttr("disabled");
+        }).done(function(databases){
+		for(var i=0;i< databases.length;i++){
+			if(databases[i].username==data){
+				if('password' in databases[i]){
+					$(".pwd").val(databases[i].password);
 				}
-
-
-				if('password' in domains[i]){
-					$(".pwd").val(domains[i].password);
+				if('username' in databases[i]){
+                                        $(".username").val(databases[i].username);
+                                        $(".username").attr("disabled","disabled");
+                                        $(".savebtn").removeAttr("disabled");
 				}
-
-				if('domain' in domains[i]){
-					$('#domain').val(domains[i].domain);
-					$(".savebtn").removeAttr("disabled");
-					$("#domain").attr("disabled","disabled");
-				}
-
-				if(domains[i].www==1){
-					$("#www").bootstrapSwitch('state', true);
-			        }
-
-				if('crtfile' in domins[i]){
-					if(domains[i].crtfile==""){
-						$("#certificate").val("");
-					}else{
-						$("#certificate").val(domains[i].crtfile);
-					}
-			        }
 				break;
 			}
 		}
@@ -265,7 +239,9 @@ function enableActions(){
 				"container":$("#whoami").text().trim()
 			}
 		}).done(function(){
-//			location.href=location.href;
+                        $('.modal').modal('hide');
+                        $("#savedatabase span").addClass("hidden");
+                        renderContent();
 		}).error(function(){
 		});
 	});
@@ -351,3 +327,38 @@ function deleteDomain(data){
 	});
 	renderContent();
 }
+
+function deleteDatabase(data){
+//	data=jQuery.parseJSON(data);
+	BootstrapDialog.show({
+		message: 'Delete database '+data+"?",
+		buttons: [{
+			label: 'Delete',
+			cssClass: 'btn-danger',
+			autospin: 'true',
+			action: function(dialogItself){
+				$.ajax({
+					url:'/api/database/'+data,
+					method:'DELETE',
+					dataType:'json'
+				}).done(function(resp){
+					dialogItself.close();
+					renderContent();
+				}).error(function(resp){
+					dialogItself.close();
+					BootstrapDialog.alert({message:"Dafuq?!?"+resp.status})
+					$("#errorframe").html(resp.status);
+					renderContent();
+				});
+			}
+		}, {
+			label: 'Cancel',
+			cssClass: 'btn-primary',
+			action: function(dialogItself){
+				dialogItself.close();
+			}
+		}]
+	});
+	renderContent();
+}
+

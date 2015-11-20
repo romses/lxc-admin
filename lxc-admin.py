@@ -150,7 +150,7 @@ def apinameddomain(name):
 def apinameddatabase(name):
     db=lib.database(options)
     if request.method=="GET":
-        return render_template('database.tmpl')
+        return Response(json.dumps(db.list(name)),mimetype="application/json")
     elif request.method=="DELETE":
         return Response(json.dumps(db.delete(name)),mimetype="application/json")
     elif request.method=="PUT":
