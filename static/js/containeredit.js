@@ -261,16 +261,15 @@ function randomPassword(length){
 }
 
 function deleteUser(data){
-	data=jQuery.parseJSON(data);
 	BootstrapDialog.show({
-		message: 'Delete FTP-user '+data.username+"?",
+		message: 'Delete FTP-user '+data+"?",
 		buttons: [{
 			label: 'Delete',
 			cssClass: 'btn-danger',
 			autospin: 'true',
 			action: function(dialogItself){
 				$.ajax({
-					url:'/api/user/'+data.username,
+					url:'/api/user/'+data,
 					method:'DELETE',
 					dataType:'json'
 				}).done(function(resp){

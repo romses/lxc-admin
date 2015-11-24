@@ -10,6 +10,8 @@ import bcrypt
 import shutil
 import base64
 import OpenSSL.crypto
+import subprocess,shlex               #execute shell commands
+from subprocess import Popen
 
 class container:
     """Container Abstraction"""
@@ -52,7 +54,52 @@ class container:
         return(c)
 
     def create(self,name,data):
-        time.sleep(5)
+        if('.' in name):
+            return{"status":"Error","extstatus":"char . not allowed in name"}
+        if('type' in data):
+            if(data['type'].upper()=="DOWNLOAD"):
+                c=lxc.Container(name)
+                if c.defined:
+                    return {"status":"Error","extstatus":"Container already existing"}
+                else:
+                    command = 'lxc-create -n {}'.format(name)
+                    command += ' -t download'
+                    command += ' -B btrfs'
+                    command += " -- -d {}".format(data['origin[dist]'])
+                    command += " -r {}".format(data['origin[version]'])
+                    command += " -a {}".format(data['origin[arch]'])
+
+                    try:
+                        subprocess.check_call('{}'.format(command),shell=True)
+                    except subprocess.CalledProcessError:
+                        print("Container downloading failed!")
+
+                    f = open("/var/lib/lxc/"+name+"/config","a")
+                    f.write("lxc.start.auto = 1")
+                    f.close()
+
+                    os.mkdir("/var/lib/lxc/{}/rootfs/var/www/".format(name))
+                    os.chown("/var/lib/lxc/{}/rootfs/var/www/".format(name),1000,1000)
+
+                    updateHAProxy()
+
+                    if(c.defined):
+                        return {"Status":"Ok","extstatus":"Container created"}
+                    else:
+                        return {"Status":"Error","extstatus":"Container creation failed"}
+            if(data['type'].upper()=="CLONE"):
+                if('origin' in data):
+                    c=lxc.Container(data['origin'])
+                    if c.defined:
+                        c.clone(name)
+                        os.mkdir("/var/lib/lxc/{}/rootfs/var/www/".format(name))
+                        os.chown("/var/lib/lxc/{}/rootfs/var/www/".format(name),1000,1000)
+                    else:
+                        return{"status":"Error","extstatus":"Origin not dound"}
+                else:
+                    return{"status":"Error","extstatus":"Origin missing"}
+        else:
+            return{"status":"Error","extstatus":"Incomplete Request: Type (clone/download) missing"}
         return {'status':'Ok','extstatus':'Container created'}
 
     def delete(self,name):
@@ -132,7 +179,7 @@ class user:
         if(data['user']=="error"):
             return {'status':'Error','extstatus':'user triggered error'}
 
-        homedir="/var/lib/lxc/"+data['container']+"/rootfs/var/www/html/"
+        homedir="/var/lib/lxc/"+data['container']+"/rootfs/var/www/"
         try:
             self.cur.execute('INSERT INTO ftpuser (userid,passwd,container,homedir) VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE passwd=VALUES(passwd), container=VALUES(container)',(data['user'],data['password'],data['container'],homedir))
             self.con.commit()
@@ -273,7 +320,7 @@ class domain:
         return {"status":"Ok","extstatus":"Domain "+name+" deleted"}
 
     def updateHAProxy(self):
-        shutil.copy2('haproxy.stub', '/etc/haproxy/haproxy-test.cfg')
+        shutil.copy2('haproxy.stub', '/etc/haproxy/haproxy.cfg')
 
         self.cur.execute("SELECT domain,www,crtfile,container FROM domains")
         rows = self.cur.fetchall()
@@ -297,20 +344,20 @@ class domain:
                     if(row[1]):
                         ssldomains['www.'+row[0]]=row[3]
 
-        f=open('/etc/haproxy/domain2backend-test.map',"w")
+        f=open('/etc/haproxy/domain2backend.map',"w")
 #Generate HTTP Frontends
         for k in domains.keys():
             f.write(k+" bk_"+domains[k]+"\n")
         f.write("macftp02.macrocom.de bk_config\n")
         f.close()
 
-        f=open("/etc/haproxy/domain2backend_ssl-test.map","w")
+        f=open("/etc/haproxy/domain2backend_ssl.map","w")
         for k in ssldomains:
 #            print(k+" "+ssldomains[k])
             f.write(k+" bk_"+ssldomains[k]+"\n")
         f.close()
 
-        f = open("/etc/haproxy/haproxy-test.cfg","a")
+        f = open("/etc/haproxy/haproxy.cfg","a")
 
 #Generate HTTPS Frontends
 
@@ -334,6 +381,9 @@ class domain:
         f.write('\tserver srvdefault 127.0.0.1:'+self.options['PORT']+' check\n\n')
 
         f.close()
+
+        command = ['service', 'haproxy','restart'];
+        subprocess.check_call(command, shell=False)
 
         return 0
 
