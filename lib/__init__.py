@@ -78,6 +78,7 @@ class container:
                     f.write("lxc.start.auto = 1")
                     f.close()
 
+                    os.chmod("/var/lib/lxc/{}".format(name),0o775)
                     os.mkdir("/var/lib/lxc/{}/rootfs/var/www/".format(name))
                     os.chown("/var/lib/lxc/{}/rootfs/var/www/".format(name),1000,1000)
 
@@ -92,6 +93,7 @@ class container:
                     c=lxc.Container(data['origin'])
                     if c.defined:
                         c.clone(name)
+                        os.chmod("/var/lib/lxc/{}".format(name),0o775)
                         os.mkdir("/var/lib/lxc/{}/rootfs/var/www/".format(name))
                         os.chown("/var/lib/lxc/{}/rootfs/var/www/".format(name),1000,1000)
                     else:
@@ -103,7 +105,24 @@ class container:
         return {'status':'Ok','extstatus':'Container created'}
 
     def delete(self,name):
-        time.sleep(5)
+        command = 'lxc-destroy -n {}'.format(name)
+
+        try:
+            subprocess.check_call('{}'.format(command),shell=True)
+            u=user(self.options)
+            for x in u.list(name):
+                u.delete(x['username'])
+            d=domain(self.options)
+            for x in d.list(name):
+                d.delete(x['domain'])
+            d=database(self.options)
+            for x in d.list(name):
+                d.delete(x['username'])
+
+        except subprocess.CalledProcessError:
+            print("Deleting container failed! (Path in use or running)")
+            return {"status":"Error","extstatus":"Deleting container failed! (Path in use or running)"}
+        
         return {'status':'Ok','extstatus':'Container deleted'}
 
     def backup(self,name):
