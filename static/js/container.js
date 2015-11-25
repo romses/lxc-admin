@@ -1,5 +1,46 @@
 var containerimages = null;
 
+$(document).ready(function(){
+	$("#mnuContainer").removeClass("active");
+	$("#mnuUser").removeClass("active");
+	$("#mnuDomains").removeClass("active");
+	$("#mnuDatabases").removeClass("active");
+	$("#mnuBackups").removeClass("active");
+	$("#mnuAdmins").removeClass("active");
+	$("#mnuContainer").addClass("active");
+
+	renderTable();
+	init();
+});
+
+
+function renderTable(){
+	$.ajax({
+		url:"/api/container",
+		method:"GET",
+		dataType:"json"
+	}).done(function(data){
+		template=$.ajax({
+			url:"/static/templates/containertable.tmpl",
+		}).done(function(cdata){
+			template=_.template(cdata);
+			rendered=template({items:data});
+
+			$("#containertable tbody").html(rendered);
+
+			$('#containerCreationType').bind('change', newContainerMode);
+
+
+		}).error(function(){
+			$("#errorframe").html("Error loading Template "+menuitems[name].template);
+		});
+	}).error(function(error){
+		$("#errorframe").html("Error loading Data /api/"+name);
+	});
+
+}
+
+
 // Container specific initialisations
 
 function init(){
@@ -10,8 +51,7 @@ function init(){
 	$('#action').attr('disabled','disabled');
 
 	$('#action').click(function(){
-
-	if($('#containerCreationType').val()=="clone"){
+		if($('#containerCreationType').val()=="clone"){
 			req={
 				"type":"clone",
 				"origin":$('#clonefrom').val()
@@ -35,9 +75,9 @@ function init(){
 			data:req,
 		}).done(function(data){
 
-
 			$("#action2").removeClass("glyphicon glyphicon-refresh spinning");
 			$("#addContainer").modal('hide');
+			renderTable();
 		}).error(function(){
 
 
@@ -56,6 +96,7 @@ function init(){
 
 
 function clearContainer(){
+	$("#addContainer").modal('show')
 	$('#doublebutton2-0').removeAttr('disabled');
 	$.getJSON("/api/images",function(data){
 		containerimages=data.data;
@@ -102,11 +143,11 @@ function start(name){
 		dataType:'json'
 	}).done(function(resp){
 		BootstrapDialog.alert({message:"Container "+name+" started"})
-		renderContent('container');
+		renderTable();
 	}).error(function(resp){
 		BootstrapDialog.alert({message:"Dafuq?!?"+resp.status})
 		$("#errorframe").html(resp.extstatus);
-		renderContent('container');
+		renderTable();
 	});
 }
 
@@ -125,12 +166,12 @@ function stop(name){
 					dataType:'json'
 				}).done(function(resp){
 					dialogItself.close();
-					renderContent('container');
+					renderTable();
 				}).error(function(resp){
 					dialogItself.close();
 					BootstrapDialog.alert({message:"Dafuq?!?"+resp.status})
 					$("#errorframe").html(resp.status);
-					renderContent('container');
+					renderTable();
 				});
 			}
 		}, {
@@ -158,12 +199,12 @@ function del(name){
 				}).done(function(resp){
 					dialogItself.close();
 					BootstrapDialog.alert({message:"Container "+name+" deleted"})
-					renderContent('container');
+					renderTable();
 				}).error(function(resp){
 					dialogItself.close();
 					BootstrapDialog.alert({message:"Dafuq?!?"+resp.status})
 					$("#errorframe").html(resp.status);
-					renderContent('container');
+					renderTable();
 				});
 			}
 		}, {
@@ -192,12 +233,12 @@ function backup(name){
 				}).done(function(resp){
 					dialogItself.close();
 					BootstrapDialog.alert({message:"Container "+name+" saved"})
-					renderContent('container');
+					renderTable();
 				}).error(function(resp){
 					dialogItself.close();
 					BootstrapDialog.alert({message:"Dafuq?!?"+resp.status})
 					$("#errorframe").html(resp.status);
-					renderContent('container');
+					renderTable();
 				});
 			}
 		}, {
@@ -244,35 +285,3 @@ function setArchitecture() {
 function selectMenu(item){
 }
 
-$(document).ready(function(){
-	$("#mnuContainer").removeClass("active");
-	$("#mnuUser").removeClass("active");
-	$("#mnuDomains").removeClass("active");
-	$("#mnuDatabases").removeClass("active");
-	$("#mnuBackups").removeClass("active");
-	$("#mnuAdmins").removeClass("active");
-	$("#mnuContainer").addClass("active");
-
-	$.ajax({
-		url:"/api/container",
-		method:"GET",
-		dataType:"json"
-	}).done(function(data){
-		template=$.ajax({
-			url:"/static/templates/containertable.tmpl",
-		}).done(function(cdata){
-			template=_.template(cdata);
-			rendered=template({items:data});
-			$("#target").html(rendered);
-
-			$('#containerCreationType').bind('change', newContainerMode);
-
-			init();
-
-		}).error(function(){
-			$("#errorframe").html("Error loading Template "+menuitems[name].template);
-		});
-	}).error(function(error){
-		$("#errorframe").html("Error loading Data /api/"+name);
-	});
-});

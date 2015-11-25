@@ -106,9 +106,9 @@ class container:
 
     def delete(self,name):
         command = 'lxc-destroy -n {}'.format(name)
-
+        out=""
         try:
-            subprocess.check_call('{}'.format(command),shell=True)
+            out = subprocess.check_output('{}'.format(command),shell=True)
             u=user(self.options)
             for x in u.list(name):
                 u.delete(x['username'])
@@ -134,11 +134,23 @@ class container:
         return {'status':'Ok','extstatus':'Container restored'}
 
     def start(self,name):
-        time.sleep(5)
+        c=lxc.Container(name)
+        if c.defined:
+            c.start()
+            return {'status':'Ok','extstatus':'Container started'}
+        else:
+            return {'status':'Error','extstatus':'Container not existing'}
+            
         return {'status':'Ok','extstatus':'Container started'}
 
     def stop(self,name):
-        time.sleep(5)
+        c=lxc.Container(name)
+        if c.defined:
+            c.stop()
+            return {'status':'Ok','extstatus':'Container stopped'}
+        else:
+            return {'status':'Error','extstatus':'Container not existing'}
+            
         return {'status':'Ok','extstatus':'Container stopped'}
 
     def images(self):
