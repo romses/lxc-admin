@@ -134,8 +134,9 @@ class container:
         return(b.create(name))
         return {'status':'Ok','extstatus':'Container saved'}
 
-    def restore(self,name):
-        time.sleep(5)
+    def restore(self,name,data):
+        b=backup(self.options)
+        return(b.restore(name,data))
         return {'status':'Ok','extstatus':'Container restored'}
 
     def start(self,name):
@@ -623,9 +624,48 @@ class backup:
         time.sleep(5)
         return {}
 
-    def restore(self,name,date):
-        time.sleep(5)
-        return {}
+    def restore(self,name,data):
+        cmd='btrfs subvolume list /var/lib/lxc'
+        subvolumes=os.popen(cmd).readlines()
+
+        if('date' not in data):
+            return{"status":"Error","extstatus":"date not provided"}
+        else:
+            file=data['date']
+
+        create_subvolume=1
+
+        for subvolume in subvolumes:
+            if (subvolume.split(" ")[8].strip()) == name+"/rootfs":
+                print("Skipping rootfs creation")
+                create_subvolume=0
+
+        if(create_subvolume):
+            if not os.path.isdir("/var/lib/lxc/"+name):
+                os.makedirs("/var/lib/lxc/"+name)
+            cmd="btrfs subvolume create /var/lib/lxc/"+name+"/rootfs"
+            os.popen(cmd)
+
+        today = datetime.datetime.today()
+
+        f=open("/var/lib/lxc/"+name+"/.lockfile","w")
+        f.write(today.strftime("%Y-%b-%d-%H-%M-%S"))
+        f.close()
+
+        if(os.path.isfile(self.options['BACKUPPATH']+"/"+name+"/"+file+".tar.bz2")):
+            cmd='tar xf '+self.options['BACKUPPATH']+"/"+name+"/"+file+".tar.bz2 -C /var/lib/lxc/"
+            os.popen(cmd).readlines()
+        else:
+            return {"status":"Error","extstatus":"Backup not found"}
+
+        cmd='mysql -u'+self.options['DB_USERNAME']+' -p'+self.options['DB_PASSWORD']+" < "+"/var/lib/lxc/{}/databasedump.sql".format(name)
+
+        os.popen(cmd).readlines()
+
+#        os.remove("/var/lib/lxc/"+container+"/databasedump.sql")
+#        os.remove("/var/lib/lxc/"+container+"/.lockfile")
+
+        return {"status":"Ok","extstatus":"Container restored"}
 
 
 class admin:

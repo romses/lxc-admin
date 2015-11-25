@@ -52,15 +52,38 @@ function del(data){
 }
 
 function restore(container,date){
-console.log(container);
-console.log(date);
-	$.ajax({
-		url:'/api/backup/'+data.container,
-		method:'POST',
-		data:{	'container':data.container,
-			'date':data.date
-		}
-	}).done(function(data){
-	}).error(function(){
-	});
+        BootstrapDialog.show({
+                message: 'Restore backup '+container+"/"+date+"?",
+                buttons: [{
+                        label: 'Restore',
+                        cssClass: 'btn-danger',
+                        autospin: 'true',
+                        action: function(dialogItself){
+				$.ajax({
+					url:'/api/container/'+container,
+					method:'POST',
+					data:{
+						'action':'restore',
+						'container':container,
+						'date':date
+					}
+				}).done(function(data){
+					dialogItself.close();
+					renderTable();
+				}).error(function(){
+					dialogItself.close();
+					BootstrapDialog.alert({message:"Dafuq?!?"+resp.status})
+					$("#errorframe").html(resp.status);
+					renderTable();
+				});
+                        }
+                }, {
+                        label: 'Cancel',
+                        cssClass: 'btn-primary',
+                        action: function(dialogItself){
+                                dialogItself.close();
+                        }
+                }]
+        });
+        renderContent();
 }

@@ -104,6 +104,8 @@ def apinamedcontainer(name):
     elif request.method=="POST":
         if request.form['action']=="backup":
             return Response(json.dumps(l.backup(name)),mimetype="application/json")
+        elif request.form['action']=="restore":
+            return Response(json.dumps(l.restore(name,request.form)),mimetype="application/json")
         elif request.form['action']=="start":
             return Response(json.dumps(l.start(name)),mimetype="application/json")
         elif request.form['action']=="stop":
@@ -163,13 +165,11 @@ def apinameddatabase(name):
 @app.route('/api/backup/<name>',methods=['GET', 'POST','DELETE','PUT'])
 @requires_auth
 def apinamedbackup(name):
-    db=lib.database(options)
-    if request.method=="GET":
-        return render_template('database.tmpl')
-    elif request.method=="DELETE":
-        return Response(json.dumps(db.delete(name)),mimetype="application/json")
+    b=lib.backup(options)
+    if request.method=="DELETE":
+        return Response(json.dumps(b.delete(name)),mimetype="application/json")
     elif request.method=="PUT":
-        return Response(json.dumps(db.create(name,request.form)),mimetype="application/json")
+        return Response(json.dumps(b.create(name,request.form)),mimetype="application/json")
     else:
         print(request.method+" not implemented")
 
