@@ -181,7 +181,7 @@
     }  
  
 ### new backup
-    PUT /api/nackup/<name>
+    PUT /api/backup/<name>
 
     Params:{}  
 
@@ -198,6 +198,19 @@
     Returns:{
       "status":"Ok|Error",
       "extstatus":"text"
+    }
+
+### restore backup
+    GET /api/backup/name
+
+    Params:{
+        "container":container,
+        "date":date"
+    }
+
+    Returns:{
+        "status":"Ok|Error",
+        "extstatus":text
     }
 
 ## Admins

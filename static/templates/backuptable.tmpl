@@ -1,34 +1,21 @@
-<div id="row">
-  <div id="col-ms-12">
-    <table class="entries table table-stripped">
-      <thead>
-        <tr>
-          <th>Container</th><th>Date</th><th>Size</th><th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <%
-          _.each(items,function(item,key,list){
-        %>
-        <tr>
-          <td>
-            <a href='/container/<%= item.container %>'><%= item.container %></a>
-          </td>
-          <td><%= item.date %></td>
-          <td><%= item.size %></td>
-          <td>
-            <div class="btn-group-xs btn-group" role="group" aria-label="Center">        
-              <button type="button" class="btn btn-primary" onclick='restore(<%= JSON.stringify(item) %>)'>
-                <span class="glyphicon glyphicon glyphicon-open" aria-hidden="true"></span> Restore
-              </button>
-              <button type="button" class="btn btn-danger" onclick='del(<%= JSON.stringify(item) %>);'>
-                <span class="glyphicon glyphicon glyphicon-trash" aria-hidden="true"></span> Delete
-              </button>
-            </div>
-          </td>
-       <% }); %>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+<%
+  _.each(items,function(item,key,list){
+%>
+  <tr>
+    <td>
+      <a href='/container/<%= item.container %>'><%= item.container %></a>
+    </td>
+    <td><%= item.date %></td>
+    <td><%= item.size %></td>
+    <td>
+      <div class="btn-group-xs btn-group" role="group" aria-label="Center">        
+        <button type="button" class="btn btn-primary" onclick=restore('<%= item.container %>','<%=item.date%>')>
+          <span class="glyphicon glyphicon glyphicon-open" aria-hidden="true"></span> Restore
+        </button>
+        <button type="button" class="btn btn-danger" onclick=del('<%= item.container %>','<%=item.date%>')>
+          <span class="glyphicon glyphicon glyphicon-trash" aria-hidden="true"></span> Delete
+        </button>
+      </div>
+    </td>
+  </tr>
+<% }); %>

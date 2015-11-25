@@ -9,6 +9,10 @@ $(document).ready(function(){
 	$("#mnuAdmins").removeClass("active");
 	$("#mnuBackups").addClass("active");
 
+	renderTable();
+});
+
+function renderTable(){
 	$.ajax({
 		url:"/api/backup",
 		method:"GET",
@@ -23,7 +27,7 @@ $(document).ready(function(){
                         }).done(function(container){
 				template=_.template(cdata);
 				rendered=template({items:data,container:container});
-				$("#target").html(rendered);
+				$("#backups tbody").html(rendered);
                         });
 
 		}).error(function(){
@@ -32,7 +36,8 @@ $(document).ready(function(){
 	}).error(function(error){
 		$("#errorframe").html("Error loading Data /api/"+name);
 	});
-});
+
+}
 
 function del(data){
 	$.ajax({
@@ -46,7 +51,9 @@ function del(data){
 	});
 }
 
-function restore(data){
+function restore(container,date){
+console.log(container);
+console.log(date);
 	$.ajax({
 		url:'/api/backup/'+data.container,
 		method:'POST',

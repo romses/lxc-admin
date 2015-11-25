@@ -1,8 +1,17 @@
 {% extends "layout.html" %}
 {% block body %}
 <script language="javascript" type="text/javascript" src="/static/js/backup.js"></script>
-<div id="target">
-</div>
-<div class="col-md-12" id="errorframe">
+<div id="row">
+  <div id="col-ms-12">
+    <table id="backups" class="entries table table-stripped">
+      <thead>
+        <tr>
+          <th>Container</th><th>Date</th><th>Size</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock %}

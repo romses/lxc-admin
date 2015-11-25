@@ -12,6 +12,10 @@ import base64
 import OpenSSL.crypto
 import subprocess,shlex               #execute shell commands
 from subprocess import Popen
+import timestamp
+import datetime
+import tarfile
+
 
 class container:
     """Container Abstraction"""
@@ -126,7 +130,8 @@ class container:
         return {'status':'Ok','extstatus':'Container deleted'}
 
     def backup(self,name):
-        time.sleep(5)
+        b=backup(self.options)
+        return(b.create(name))
         return {'status':'Ok','extstatus':'Container saved'}
 
     def restore(self,name):
@@ -521,8 +526,12 @@ class database:
 
 class backup:
     """Backup Abstraction"""
+    con=0
+    cur=0
     def __init__(self,options):
         self.options=options
+        self.con=pymysql.connect(self.options['DB_HOST'], self.options['DB_USERNAME'], self.options['DB_PASSWORD'], self.options['DB']);
+        self.cur=self.con.cursor()
 
     def list(self):
         backups=[]
@@ -537,8 +546,78 @@ class backup:
         return backups
 
     def create(self,name):
-        time.sleep(5)
-        return {}
+        self.cur.execute('SELECT * FROM db WHERE container = %s',(name))
+        rows = self.cur.fetchall()
+
+        command = ['mysqldump', '-u'+self.options['DB_USERNAME'],"-p"+self.options['DB_PASSWORD'],"--databases"];
+
+        for row in rows:
+            command.append(row[0])
+
+        try:
+            f=open('/var/lib/lxc/{}/databasedump.sql'.format(name),"w")
+            x=Popen(command,stdout=f)
+            x.wait()
+
+            f.write("\nuse lxc;\n")
+            for row in rows:
+                sql="INSERT INTO db (user,password,container) VALUES ('{}','{}','{}') ON DUPLICATE KEY UPDATE user=VALUES(user), password=VALUES(password), container=VALUES(container);\n"
+                f.write(sql.format(row[0],row[1],row[2]))
+                sql="GRANT USAGE ON *.* to '{}'@'%' IDENTIFIED BY '{}';\n"
+                f.write(sql.format(row[0],row[1]))
+                sql="GRANT ALL ON {}.* to '{}'@'%' IDENTIFIED BY '{}';\n"
+                f.write(sql.format(row[0],row[0],row[1]))
+
+            self.cur.execute('SELECT * FROM ftpuser WHERE container = %s',(name))
+            rows = self.cur.fetchall()
+
+            for row in rows:
+                sql="INSERT INTO ftpuser (userid,passwd,container,uid,gid,homedir,shell) VALUES ('{}','{}','{}',{},{},'{}','{}') ON DUPLICATE KEY UPDATE userid=VALUES(userid), passwd=VALUES(passwd), container=VALUES(container), uid=VALUES(uid), gid=VALUES(gid),homedir=VALUES(homedir),shell=VALUES(shell);\n"
+                f.write(sql.format(row[0],row[1],row[2],row[3],row[4],row[5],row[6]))
+
+            self.cur.execute('SELECT * FROM domains WHERE container = %s',(name))
+            rows = self.cur.fetchall()
+
+            for row in rows:
+                domain=row[0]
+                www=row[1]
+                ssl=row[2]
+                crtfile=row[3]
+                sql="INSERT INTO domains (domain,www,`ssl`,container,crtfile) VALUES ('{}',{},'{}','{}','{}') ON DUPLICATE KEY UPDATE domain=VALUES(domain), www=VALUES(www), `ssl`=VALUES(`ssl`), container=VALUES(container), crtfile=VALUES(crtfile);\n"
+                f.write(sql.format(row[0],row[1],row[2],name,row[3]))
+            f.close()
+
+        except subprocess.CalledProcessError as e:
+            print(e)
+            return {"status":"Error","extstatus":"Creating backup failed"}
+
+        today = datetime.datetime.today()
+        filename=self.options['BACKUPPATH']+"/"+name+"/"+today.strftime("%Y-%b-%d-%H-%M-%S")+".tar.bz2.incomplete"
+
+        if not os.path.isdir(self.options['BACKUPPATH']+"/"+name+"/"):
+            os.mkdir(self.options['BACKUPPATH']+"/"+name+"/")
+
+        tar=tarfile.open(filename,'w:bz2')
+        tar.add('/var/lib/lxc/'+name,filter=self.prefixer)
+        tar.close()
+
+        os.rename(filename,filename.replace('.incomplete','',1))
+        os.remove('/var/lib/lxc/'+name+'/databasedump.sql')
+
+        return {"status":"Ok","extstatus":"Backup completed"}
+
+
+    def prefixer(self,tarinfo):
+        tarinfo.name=tarinfo.name[12:]
+        tokens=tarinfo.name.split("/")
+        if(len(tokens)>3):
+            if(tokens[3]=="proc"):
+                return None
+            if(tokens[3]=="sys"):
+                return None
+            if(tokens[3]=="run"):
+                return None
+        return tarinfo
 
     def delete(self,name):
         time.sleep(5)
