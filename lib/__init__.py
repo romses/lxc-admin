@@ -141,8 +141,10 @@ class container:
 
     def start(self,name):
         c=lxc.Container(name)
+        d=domain(self.options)
         if c.defined:
             c.start()
+            d.updateHAProxy()
             return {'status':'Ok','extstatus':'Container started'}
         else:
             return {'status':'Error','extstatus':'Container not existing'}
@@ -151,8 +153,10 @@ class container:
 
     def stop(self,name):
         c=lxc.Container(name)
+        d=domain(self.options)
         if c.defined:
             c.stop()
+            d.updateHAProxy()
             return {'status':'Ok','extstatus':'Container stopped'}
         else:
             return {'status':'Error','extstatus':'Container not existing'}
@@ -376,10 +380,11 @@ class domain:
                 if(row[1]):
                     domains['www.'+row[0]]=row[3]
                 if(row[2]):
-                    sslcerts.append(row[2])
-                    ssldomains[row[0]]=row[3]
-                    if(row[1]):
-                        ssldomains['www.'+row[0]]=row[3]
+                    if(os.path.isfile(row[2])):
+                        sslcerts.append(row[2])
+                        ssldomains[row[0]]=row[3]
+                        if(row[1]):
+                            ssldomains['www.'+row[0]]=row[3]
 
         f=open('/etc/haproxy/domain2backend.map',"w")
 #Generate HTTP Frontends
