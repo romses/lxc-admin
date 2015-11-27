@@ -714,3 +714,181 @@ class admin:
 
         except pymysql.Error as e:
             return {"status":"Error","extstatus":"Error deleting "+name}
+
+
+
+class certificate:
+    """Certificate Abstraction"""
+    crtblob=""
+    certs=[]
+
+    def __init__(self,crtblob):
+        self.crtblob=crtblob
+
+    def isValid(self):
+        return true
+
+    def matchDomain(self,domain):
+        return false
+
+    def save(self,filename):
+        return false
+
+    def checkCRT(self,domain,crt):
+        stSpam, stHam, stDump = 0, 1, 2
+        startMarkers=['-----BEGIN CERTIFICATE-----']
+        stopMarkers=['-----END CERTIFICATE-----']
+        state = stSpam
+        for line in crt.split('\n'):
+            line=line.strip()
+            if state == stSpam:
+                if line in startMarkers:
+                    certLines = []
+                    state = stHam
+                    continue
+            if state == stHam:
+                if line in stopMarkers:
+                    state = stSpam
+                    try:
+                        x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_ASN1, base64.b64decode("".join(certLines)))
+                        if(self.urlmatch(x509.get_subject().CN,domain)):
+                            return(True) # Match using CN
+                        for i in range(0,x509.get_extension_count()):
+                            extension = x509.get_extension(i)
+                            if(b'subjectAltName'==extension.get_short_name()):
+                                for token in str(extension).split(","):
+                                    if(self.urlmatch(token.split(":")[1],domain)):
+                                        return(True) # Match using DNS alternate name
+                    except Exception as e:
+                        return(False) # Cert not parsable
+
+                else:
+                    certLines.append(line)
+        return (False) # No Match
+
+    def urlmatch(self,a,b):
+        aa = a.split('.')
+        bb = b.split('.')
+        if len(aa) != len(bb): return False
+        for x, y in zip(aa, bb):
+            if not (x == y or x == '*' or y == '*'): return False
+        return True
+
+#!/usr/bin/python3
+
+import json
+import OpenSSL.crypto
+
+
+class certificate:
+    """Certificate handler"""
+
+    def __init__(self,data=[""]):
+        self.crtblob=data
+        self.certs=[]
+        self.keys=[]
+        self.certloader()
+        self.keyloader
+
+    def open(self,filename):
+        with open(filename) as f:
+            for line in f.readlines():
+                self.crtblob.append(line)
+        self.certloader()
+        self.keyloader()
+        return 0
+
+    def reset(self):
+        self.crtblob=""
+        self.certs=[]
+        self.keys=[]
+        return 0
+
+    def certloader(self):
+        """Certloader"""
+        stSpam, stHam, stDump = 0, 1, 2
+        startMarkers=['-----BEGIN CERTIFICATE-----']
+        stopMarkers=['-----END CERTIFICATE-----']
+        state = stSpam
+        for line in self.crtblob:
+            if state == stSpam:
+                if line.strip() in startMarkers:
+                    certLines = []
+                    certLines.append(line)
+                    state = stHam
+                    continue
+            if state == stHam:
+                if line.strip() in stopMarkers:
+                    certLines.append(line)
+                    state = stSpam
+                    self.certs.append("".join(certLines))
+                else:
+                    certLines.append(line)
+
+    def keyloader(self):
+        """Certloader"""
+        stSpam, stHam, stDump = 0, 1, 2
+        startMarkers=['-----BEGIN RSA PRIVATE KEY-----','-----BEGIN PRIVATE KEY-----']
+        stopMarkers=['-----END RSA PRIVATE KEY-----','-----END PRIVATE KEY-----']
+        state = stSpam
+        for line in self.crtblob:
+            if state == stSpam:
+                if line.strip() in startMarkers:
+                    certLines = []
+                    certLines.append(line)
+                    state = stHam
+                    continue
+            if state == stHam:
+                if line.strip() in stopMarkers:
+                    certLines.append(line)
+                    state = stSpam
+                    self.keys.append("".join(certLines))
+                else:
+                    certLines.append(line)
+
+    def matchName(self,domain):
+        """certparser"""
+        answer={"match":False,"pkey":False}
+
+        for cert in self.certs:
+            try:
+                cert_obj = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
+            except OpenSSL.crypto.Error:
+                raise Exception('certificate is not correct: %s' % cert)
+
+            for key in self.keys:
+                try:
+                    private_key_obj = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, key)
+                except OpenSSL.crypto.Error:
+                    raise Exception('private key is not correct: %s' % key)
+
+                context = OpenSSL.SSL.Context(OpenSSL.SSL.TLSv1_METHOD)
+                context.use_privatekey(private_key_obj)
+                context.use_certificate(cert_obj)
+
+                try:
+                    context.check_privatekey()
+                    if(self.urlmatch(cert_obj.get_subject().CN,domain)):
+                        answer['match']=True
+                        answer['pkey']=True
+                        return(answer)
+                    for i in range(0,cert_obj.get_extension_count()):
+                        extension = cert_obj.get_extension(i)
+                        if(b'subjectAltName'==extension.get_short_name()):
+                            for token in str(extension).split(","):
+                                if(self.urlmatch(token.split(":")[1],domain)):
+                                    answer['match']=True
+                                    answer['pkey']=True
+                                    return(answer)
+                except OpenSSL.SSL.Error as e:
+                    continue
+
+        return(answer)
+
+    def urlmatch(self,a,b):
+        aa = a.split('.')
+        bb = b.split('.')
+        if len(aa) != len(bb): return False
+        for x, y in zip(aa, bb):
+            if not (x == y or x == '*' or y == '*'): return False
+        return True
