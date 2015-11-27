@@ -76,7 +76,7 @@ class container:
                     try:
                         subprocess.check_call('{}'.format(command),shell=True)
                     except subprocess.CalledProcessError:
-                        print("Container downloading failed!")
+                        print("container:create: - Container downloading failed!")
 
                     f = open("/var/lib/lxc/"+name+"/config","a")
                     f.write("lxc.start.auto = 1")
@@ -124,7 +124,7 @@ class container:
                 d.delete(x['username'])
 
         except subprocess.CalledProcessError:
-            print("Deleting container failed! (Path in use or running)")
+            print("container:delete: - Deleting container failed! (Path in use or running)")
             return {"status":"Error","extstatus":"Deleting container failed! (Path in use or running)"}
         
         return {'status':'Ok','extstatus':'Container deleted'}
@@ -272,9 +272,7 @@ class domain:
         return domains
 
     def create(self,name,data):
-
         www=0
-
         if('domain' not in data):
             return {'status':'Error','extstatus':'domain missing'}
         if('container' not in data):
@@ -292,7 +290,9 @@ class domain:
                 os.remove(tmpfile)
             tmpfile=""
         else:
-            if(self.checkCRT(name,data['ssl'])):
+            c=certificate(data['ssl'])
+            if(c.isUsableFor(name)):
+#            if(self.checkCRT(name,data['ssl'])):
                 f=open(tmpfile,"w")
                 f.write(data['ssl'])
                 f.close()
@@ -308,46 +308,6 @@ class domain:
         self.updateHAProxy()
 
         return {"status":"Ok","extstatus":"Domain saved"}
-
-    def checkCRT(self,domain,crt):
-        stSpam, stHam, stDump = 0, 1, 2
-        startMarkers=['-----BEGIN CERTIFICATE-----']
-        stopMarkers=['-----END CERTIFICATE-----']
-        state = stSpam
-        for line in crt.split('\n'):
-            line=line.strip()
-            if state == stSpam:
-                if line in startMarkers:
-                    certLines = []
-                    state = stHam
-                    continue
-            if state == stHam:
-                if line in stopMarkers:
-                    state = stSpam
-                    try:
-                        x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_ASN1, base64.b64decode("".join(certLines)))
-                        if(self.urlmatch(x509.get_subject().CN,domain)):
-                            return(True) # Match using CN
-                        for i in range(0,x509.get_extension_count()):
-                            extension = x509.get_extension(i)
-                            if(b'subjectAltName'==extension.get_short_name()):
-                                for token in str(extension).split(","):
-                                    if(self.urlmatch(token.split(":")[1],domain)):
-                                        return(True) # Match using DNS alternate name
-                    except Exception as e:
-                        return(False) # Cert not parsable
-
-                else:
-                    certLines.append(line)
-        return (False) # No Match
-
-    def urlmatch(self,a,b):
-        aa = a.split('.')
-        bb = b.split('.')
-        if len(aa) != len(bb): return False
-        for x, y in zip(aa, bb):
-            if not (x == y or x == '*' or y == '*'): return False
-        return True
 
     def delete(self,name):
         try:
@@ -372,7 +332,6 @@ class domain:
         backends=[]
 
         for row in rows:
-#            if(row[3] in lxclite.running()):
             if( lxc.Container(row[3]).running):
                 domains[row[0]]=row[3]
                 if(row[3] not in backends):
@@ -380,6 +339,8 @@ class domain:
                 if(row[1]):
                     domains['www.'+row[0]]=row[3]
                 if(row[2]):
+                    c=certificate()
+                    c.open(row[2])
                     if(os.path.isfile(row[2])):
                         sslcerts.append(row[2])
                         ssldomains[row[0]]=row[3]
@@ -496,9 +457,7 @@ class database:
         self.cur.execute("SELECT user,password,container FROM db")
         rows = self.cur.fetchall()
         for row in rows:    
-            print("Creating table "+row[0]);
             try:
-                print("trying to create database "+row[0])
                 self.cur.execute("CREATE DATABASE IF NOT EXISTS {db}".format(db=row[0]))
                 self.con.commit()
             except  mymysql.Error as e:
@@ -642,7 +601,7 @@ class backup:
 
         for subvolume in subvolumes:
             if (subvolume.split(" ")[8].strip()) == name+"/rootfs":
-                print("Skipping rootfs creation")
+                print("container:restore - Skipping rootfs creation")
                 create_subvolume=0
 
         if(create_subvolume):
@@ -667,8 +626,8 @@ class backup:
 
         os.popen(cmd).readlines()
 
-#        os.remove("/var/lib/lxc/"+container+"/databasedump.sql")
-#        os.remove("/var/lib/lxc/"+container+"/.lockfile")
+        os.remove("/var/lib/lxc/"+container+"/databasedump.sql")
+        os.remove("/var/lib/lxc/"+container+"/.lockfile")
 
         return {"status":"Ok","extstatus":"Container restored"}
 
@@ -774,28 +733,25 @@ class certificate:
             if not (x == y or x == '*' or y == '*'): return False
         return True
 
-#!/usr/bin/python3
-
-import json
-import OpenSSL.crypto
-
-
 class certificate:
     """Certificate handler"""
 
-    def __init__(self,data=[""]):
-        self.crtblob=data
+    def __init__(self,data=""):
+        self.crtblob=data.split("\n")
+        for x in range(0,len(self.crtblob)):
+            self.crtblob[x]+="\n"
         self.certs=[]
         self.keys=[]
         self.certloader()
-        self.keyloader
+        self.keyloader()
 
     def open(self,filename):
-        with open(filename) as f:
-            for line in f.readlines():
-                self.crtblob.append(line)
-        self.certloader()
-        self.keyloader()
+        if(os.path.isfile(filename)):
+            with open(filename) as f:
+                for line in f.readlines():
+                    self.crtblob.append(line)
+            self.certloader()
+            self.keyloader()
         return 0
 
     def reset(self):
@@ -853,14 +809,14 @@ class certificate:
         for cert in self.certs:
             try:
                 cert_obj = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
-            except OpenSSL.crypto.Error:
-                raise Exception('certificate is not correct: %s' % cert)
+            except OpenSSL.crypto.Error as e:
+                raise Exception('certificate is not correct: %s' % cert,e)
 
             for key in self.keys:
                 try:
                     private_key_obj = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, key)
                 except OpenSSL.crypto.Error:
-                    raise Exception('private key is not correct: %s' % key)
+                    raise Exception('private key is not correct: %s' % key,e)
 
                 context = OpenSSL.SSL.Context(OpenSSL.SSL.TLSv1_METHOD)
                 context.use_privatekey(private_key_obj)
@@ -868,6 +824,7 @@ class certificate:
 
                 try:
                     context.check_privatekey()
+
                     if(self.urlmatch(cert_obj.get_subject().CN,domain)):
                         answer['match']=True
                         answer['pkey']=True
@@ -881,9 +838,13 @@ class certificate:
                                     answer['pkey']=True
                                     return(answer)
                 except OpenSSL.SSL.Error as e:
+                    print(e)
                     continue
 
         return(answer)
+
+    def isUsableFor(self,domain):
+        return self.matchName(domain)['match']
 
     def urlmatch(self,a,b):
         aa = a.split('.')
