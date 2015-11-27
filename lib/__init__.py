@@ -813,18 +813,14 @@ class certificate:
             try:
                 cert_obj = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
             except OpenSSL.crypto.Error as e:
-                print('certificate is not correct: %s' % cert,e)
-                continue
-                return{"match":False,"pkey":False}
+                return{"match":False,"pkey":False,"error":'certificate is not parsable'}
 
             for key in self.keys:
 #check, if private key is valid
                 try:
                     private_key_obj = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, key)
                 except OpenSSL.crypto.Error:
-                    print('private key is not correct: %s' % key,e)
-                    continue
-                    return{"match":False,"pkey":False}
+                    return{"match":False,"pkey":False,"error":'private key is not parsable'}
 
                 context = OpenSSL.SSL.Context(OpenSSL.SSL.TLSv1_METHOD)
                 context.use_privatekey(private_key_obj)
@@ -849,9 +845,7 @@ class certificate:
                                     answer['pkey']=True
                                     return(answer)
                 except OpenSSL.SSL.Error as e:
-                    print(e)
-                    continue
-                    return{"match":False,"pkey":False}
+                    return{"match":False,"pkey":False,"error":"cert and pkey mismatch"}
 
         return(answer)
 
