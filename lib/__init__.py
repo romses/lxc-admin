@@ -262,6 +262,7 @@ class domain:
                 f.close()
             except:
                 crt=""
+
             c={'domain':row[0],
                'www':row[1],
                'container':row[2],
@@ -292,7 +293,6 @@ class domain:
         else:
             c=certificate(data['ssl'])
             if(c.isUsableFor(name)):
-#            if(self.checkCRT(name,data['ssl'])):
                 f=open(tmpfile,"w")
                 f.write(data['ssl'])
                 f.close()
@@ -341,7 +341,7 @@ class domain:
                 if(row[2]):
                     c=certificate()
                     c.open(row[2])
-                    if(os.path.isfile(row[2])):
+                    if(c.isUsableFor(row[0])):
                         sslcerts.append(row[2])
                         ssldomains[row[0]]=row[3]
                         if(row[1]):
@@ -737,6 +737,7 @@ class certificate:
     """Certificate handler"""
 
     def __init__(self,data=""):
+        """load Certificate by String"""
         self.crtblob=data.split("\n")
         for x in range(0,len(self.crtblob)):
             self.crtblob[x]+="\n"
@@ -746,6 +747,7 @@ class certificate:
         self.keyloader()
 
     def open(self,filename):
+        """load certificate by filename"""
         if(os.path.isfile(filename)):
             with open(filename) as f:
                 for line in f.readlines():
@@ -807,12 +809,14 @@ class certificate:
         answer={"match":False,"pkey":False}
 
         for cert in self.certs:
+#check, if certificate is valid
             try:
                 cert_obj = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
             except OpenSSL.crypto.Error as e:
                 raise Exception('certificate is not correct: %s' % cert,e)
 
             for key in self.keys:
+#check, if private key is valid
                 try:
                     private_key_obj = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, key)
                 except OpenSSL.crypto.Error:
@@ -823,15 +827,18 @@ class certificate:
                 context.use_certificate(cert_obj)
 
                 try:
+#check, if certificate and key matches
                     context.check_privatekey()
 
                     if(self.urlmatch(cert_obj.get_subject().CN,domain)):
+#if certificate matches domain
                         answer['match']=True
                         answer['pkey']=True
                         return(answer)
                     for i in range(0,cert_obj.get_extension_count()):
                         extension = cert_obj.get_extension(i)
                         if(b'subjectAltName'==extension.get_short_name()):
+#if SAN matches doamin
                             for token in str(extension).split(","):
                                 if(self.urlmatch(token.split(":")[1],domain)):
                                     answer['match']=True
@@ -847,6 +854,7 @@ class certificate:
         return self.matchName(domain)['match']
 
     def urlmatch(self,a,b):
+#helperfunction to check, if two domains matches
         aa = a.split('.')
         bb = b.split('.')
         if len(aa) != len(bb): return False
