@@ -218,7 +218,7 @@ class user:
         if('container' not in data):
             return {'status':'Error','extstatus':'Container missing'}
         if(data['user']=="error"):
-            return {'status':'Error','extstatus':'user triggered error'}
+            return {'status':'Error','extstatus':data['password']}
 
         homedir="/var/lib/lxc/"+data['container']+"/rootfs/var/www/"
         try:
@@ -297,7 +297,7 @@ class domain:
                 f.write(data['ssl'])
                 f.close()
             else:
-                return{"status":"Error","extstatus":"Certificate not matching or damaged"}
+                return{"status":"warning","extstatus":"Certificate not matching "+name+" or damaged"}
 
         try:
             self.cur.execute('INSERT INTO domains (domain,www,crtfile,container) VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE www=VALUES(www), crtfile=VALUES(crtfile), container=VALUES(container)',(data['domain'],www,tmpfile,data['container']))

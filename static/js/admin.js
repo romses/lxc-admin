@@ -53,8 +53,17 @@ function enableActions(){
 			data:{	'user':$('#user').val(),
 				'password':$('#password').val()
 			}
-		}).done(function(data){
+		}).done(function(answer){
 			$('#addadmin').modal('toggle');
+                        switch(answer.status.toUpperCase()){
+                                case "ERROR":
+                                        BootstrapDialog.alert({type:BootstrapDialog.TYPE_ERROR,title:"Error",message:answer.extstatus})
+                                        break;
+                                case "WARNING":
+                                        BootstrapDialog.alert({type:BootstrapDialog.TYPE_WARNING,title:"Warning",message:answer.extstatus})
+                                        break;
+                        }
+
 			renderTable();
 		});
 	});

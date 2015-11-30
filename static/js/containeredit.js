@@ -66,10 +66,10 @@ function preselectDomain($form,data){
 	$("#certificate").val("");
 	$(".savebtn").attr("disabled","disabled");
 
-        $.ajax({
-                url:"/api/domain/"+container,
-                dataType:"json",
-        }).done(function(domains){
+	$.ajax({
+		url:"/api/domain/"+container,
+		dataType:"json",
+	}).done(function(domains){
 		for(var i=0;i< domains.length;i++){
 			if(domains[i].domain==data){
 				if('domain' in domains[i]){
@@ -80,7 +80,7 @@ function preselectDomain($form,data){
 
 				if(domains[i].www==1){
 					$("#www").bootstrapSwitch('state', true);
-			        }
+				}
 
 				if('crtfile' in domains[i]){
 					if(domains[i].crtfile==""){
@@ -88,7 +88,7 @@ function preselectDomain($form,data){
 					}else{
 						$("#certificate").val(domains[i].crtfile);
 					}
-			        }
+				}
 				break;
 			}
 		}
@@ -107,10 +107,10 @@ function preselectUser($form,data){
 	$(".pwd").val("");
 	$(".savebtn").attr("disabled","disabled");
 
-        $.ajax({
-                url:"/api/user/"+container,
-                dataType:"json",
-        }).done(function(user){
+	$.ajax({
+		url:"/api/user/"+container,
+		dataType:"json",
+	}).done(function(user){
 		for(var i=0;i< user.length;i++){
 			if(user[i].username==data){
 
@@ -141,26 +141,25 @@ function preselectDatabase($form,data){
 	$(".pwd").val("");
 	$(".savebtn").attr("disabled","disabled");
 
-        $.ajax({
-                url:"/api/database/"+container,
-                dataType:"json",
-        }).done(function(databases){
+	$.ajax({
+		url:"/api/database/"+container,
+		dataType:"json",
+	}).done(function(databases){
 		for(var i=0;i< databases.length;i++){
 			if(databases[i].username==data){
 				if('password' in databases[i]){
 					$(".pwd").val(databases[i].password);
 				}
 				if('username' in databases[i]){
-                                        $(".username").val(databases[i].username);
-                                        $(".username").attr("disabled","disabled");
-                                        $(".savebtn").removeAttr("disabled");
+					$(".username").val(databases[i].username);
+					$(".username").attr("disabled","disabled");
+					$(".savebtn").removeAttr("disabled");
 				}
 				break;
 			}
 		}
 
 	}).error(function(data){
-console.log("Error");
 	});
 
 }
@@ -202,16 +201,25 @@ function enableActions(){
 				'password':$('#adduser .pwd').val(),
 				'container':$("#whoami").text().trim()
 			}
-		}).done(function(data){
+		}).done(function(answer){
 			$('.modal').modal('hide');
 			$("#saveuser span").addClass("hidden");
+			switch(answer.status.toUpperCase()){
+				case "ERROR":
+					BootstrapDialog.alert({type:BootstrapDialog.TYPE_ERROR,title:"Error",message:answer.extstatus})
+					break;
+				case "WARNING":
+					BootstrapDialog.alert({type:BootstrapDialog.TYPE_WARNING,title:"Warning",message:answer.extstatus})
+					break;
+			}
+
 			renderContent();
 		}).error(function(){
 		});
 	});
 
 	$("#savedomain").click(function(){
-                $("#savedomain span").removeClass("hidden");
+		$("#savedomain span").removeClass("hidden");
 		$.ajax({
 			url:'/api/domain/'+$("#domain").val(),
 			method:"PUT",
@@ -221,9 +229,17 @@ function enableActions(){
 				"ssl":$("#certificate").val(),
 				"container":$("#whoami").text().trim()
 			}
-		}).done(function(){
+		}).done(function(answer){
 			$('.modal').modal('hide');
 			$("#savedomain span").addClass("hidden");
+			switch(answer.status.toUpperCase()){
+				case "ERROR":
+					BootstrapDialog.alert({type:BootstrapDialog.TYPE_ERROR,title:"Error",message:answer.extstatus})
+					break;
+				case "WARNING":
+					BootstrapDialog.alert({type:BootstrapDialog.TYPE_WARNING,title:"Warning",message:answer.extstatus})
+					break;
+			}
 			renderContent();
 		}).error(function(){
 		});
@@ -238,10 +254,19 @@ function enableActions(){
 				"password":$('#adddatabase .pwd').val(),
 				"container":$("#whoami").text().trim()
 			}
-		}).done(function(){
-                        $('.modal').modal('hide');
-                        $("#savedatabase span").addClass("hidden");
-                        renderContent();
+		}).done(function(answer){
+			$('.modal').modal('hide');
+			$("#savedatabase span").addClass("hidden");
+			switch(answer.status.toUpperCase()){
+				case "ERROR":
+					BootstrapDialog.alert({type:BootstrapDialog.TYPE_ERROR,title:"Error",message:answer.extstatus})
+					break;
+				case "WARNING":
+					BootstrapDialog.alert({type:BootstrapDialog.TYPE_WARNING,title:"Warning",message:answer.extstatus})
+					break;
+			}
+
+			renderContent();
 		}).error(function(){
 		});
 	});

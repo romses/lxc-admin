@@ -63,8 +63,16 @@ function enableActions(){
 				'password':$('#password').val(),
 				'container':$('#container').val()
 			}
-		}).done(function(data){
+		}).done(function(answer){
 			$('#adduser').modal('toggle');
+                        switch(answer.status.toUpperCase()){
+                                case "ERROR":
+                                        BootstrapDialog.alert({type:BootstrapDialog.TYPE_ERROR,title:"Error",message:answer.extstatus})
+                                        break;
+                                case "WARNING":
+                                        BootstrapDialog.alert({type:BootstrapDialog.TYPE_WARNING,title:"Warning",message:answer.extstatus})
+                                        break;
+                        }
 			renderContent();
 		}).error(function(){
 		});
