@@ -2,7 +2,7 @@
 
 # all the imports
 import sqlite3
-from flask import Flask, request, session, redirect, url_for, abort, render_template, flash, Response
+from flask import Flask, request, session, redirect, url_for, abort, render_template, flash, Response, send_from_directory
 from contextlib import closing
 import pymysql as mdb
 import lib
@@ -35,6 +35,11 @@ def requires_auth(f):
         return f(*args, **kwargs)
     return decorated
 
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),'favicon.ico', mimetype='image/vnd.microsoft.icon')
+    return render_template('container.html',data=duration(t))
+
 @app.route('/')
 @requires_auth
 def index():
@@ -42,7 +47,6 @@ def index():
     t.append(time.time())
 
     return render_template('container.html',data=duration(t))
-#    return render_template('layout.html',data=duration(t))
 
 @app.route('/<template>')
 @requires_auth
@@ -51,13 +55,11 @@ def template(template):
     t.append(time.time())
 
     return render_template(template+'.html',data=duration(t))
-#    return render_template('layout.html',data=duration(t))
 
 @app.route('/container/<name>')
 @requires_auth
 def namedcontainer(name):
     return render_template('containeredit.html',entries=name)
-#    return render_template('layout.html',data=duration(t))
 
 """ API Functions """	
 
