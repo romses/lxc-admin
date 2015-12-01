@@ -39,16 +39,43 @@ function renderTable(){
 
 }
 
-function del(data){
-	$.ajax({
-		url:'/api/backup/'+data.container,
-		method:'DELETE',
-		data:{	'container':data.container,
-			'date':data.date
-		}
-	}).done(function(data){
-	}).error(function(){
-	});
+function del(name,date){
+        BootstrapDialog.show({
+		type:BootstrapDialog.TYPE_DANGER,
+                message: 'Delete backup '+name+"/"+date+"?",
+                buttons: [{
+                        label: 'Delete',
+                        cssClass: 'btn-danger',
+                        autospin: 'true',
+                        action: function(dialogItself){
+				$.ajax({
+					url:'/api/backup/'+name,
+					method:'DELETE',
+					data:{	'container':name,
+						'date':date
+					}
+				}).done(function(data){
+					dialogItself.close();
+					renderTable();
+				}).error(function(){
+					dialogItself.close();
+					BootstrapDialog.alert({message:"Dafuq?!?"+resp.status})
+					$("#errorframe").html(resp.status);
+					renderTable();
+				});
+                        }
+                }, {
+                        label: 'Cancel',
+                        cssClass: 'btn-primary',
+                        action: function(dialogItself){
+                                dialogItself.close();
+                        }
+                }]
+        });
+        renderContent();
+
+
+
 }
 
 function restore(container,date){

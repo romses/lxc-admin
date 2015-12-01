@@ -220,7 +220,13 @@ class user:
         if(data['user']=="error"):
             return {'status':'Error','extstatus':data['password']}
 
-        homedir="/var/lib/lxc/"+data['container']+"/rootfs/var/www/"
+        homedir="/var/lib/lxc/{}/rootfs/var/www/".format(data['container'])
+
+        os.chmod("/var/lib/lxc/{}".format(data['container']),0o775)
+        if(not os.path.exists("/var/lib/lxc/{}/rootfs/var/www/".format(data['container']))):
+            os.mkdir("/var/lib/lxc/{}/rootfs/var/www/".format(data['container']))
+        os.chown("/var/lib/lxc/{}/rootfs/var/www/".format(data['container']),1000,1000)
+
         try:
             self.cur.execute('INSERT INTO ftpuser (userid,passwd,container,homedir) VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE passwd=VALUES(passwd), container=VALUES(container)',(data['user'],data['password'],data['container'],homedir))
             self.con.commit()
@@ -584,9 +590,12 @@ class backup:
                 return None
         return tarinfo
 
-    def delete(self,name):
-        time.sleep(5)
-        return {}
+    def delete(self,name,data):
+        print("Delete: ",name,data)
+        if(os.path.isfile(self.options['BACKUPPATH']+"/"+name+"/"+data['date']+".tar.bz2")):
+            os.remove(self.options['BACKUPPATH']+"/"+name+"/"+data['date']+".tar.bz2")
+            return {"status":"Ok","extstatus":"Backup deleted"}
+        return {"status":"Error","extstatus":"File not found"}
 
     def restore(self,name,data):
         cmd='btrfs subvolume list /var/lib/lxc'

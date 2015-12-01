@@ -169,7 +169,7 @@ def apinameddatabase(name):
 def apinamedbackup(name):
     b=lib.backup(options)
     if request.method=="DELETE":
-        return Response(json.dumps(b.delete(name)),mimetype="application/json")
+        return Response(json.dumps(b.delete(name,request.form)),mimetype="application/json")
     elif request.method=="PUT":
         return Response(json.dumps(b.create(name,request.form)),mimetype="application/json")
     else:
