@@ -106,6 +106,7 @@ function preselectUser($form,data){
 	$(".username").removeAttr("disabled");
 	$(".pwd").val("");
 	$(".savebtn").attr("disabled","disabled");
+	$(".chroot").val("/");
 
 	$.ajax({
 		url:"/api/user/"+container,
@@ -120,7 +121,9 @@ function preselectUser($form,data){
 					$(".savebtn").removeAttr("disabled");
 				}
 
-
+				if('homedir' in user[i] && user[i].homedir!=""){
+					$(".chroot").val(user[i].homedir);
+				}
 				if('password' in user[i]){
 					$(".pwd").val(user[i].password);
 				}
@@ -199,7 +202,8 @@ function enableActions(){
 			method:'PUT',
 			data:{  'user':$('#adduser .username').val(),
 				'password':$('#adduser .pwd').val(),
-				'container':$("#whoami").text().trim()
+				'container':$("#whoami").text().trim(),
+				'homedir':$("#adduser .chroot").val().trim()
 			}
 		}).done(function(answer){
 			$('.modal').modal('hide');

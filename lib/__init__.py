@@ -226,9 +226,9 @@ class user:
     def list(self,name=""):
         try:
             if(name==""):
-                self.cur.execute('SELECT userid,passwd,container FROM ftpuser')
+                self.cur.execute('SELECT userid,passwd,container,homedir FROM ftpuser')
             else:
-                self.cur.execute('SELECT userid,passwd,container FROM ftpuser where container=%s',name)
+                self.cur.execute('SELECT userid,passwd,container,homedir FROM ftpuser where container=%s',name)
 
             rows = self.cur.fetchall()
             users=[]
@@ -236,7 +236,8 @@ class user:
             for row in rows:
                 c={'username':row[0],
                    'password':row[1],
-                   'container':row[2]
+                   'container':row[2],
+                   'homedir':row[3].replace("/var/lib/lxc/"+row[2]+"/rootfs","")
                 }
                 users.append(c)
 
@@ -253,10 +254,21 @@ class user:
                 return {'status':'Error','extstatus':'Password missing'}
             if('container' not in data):
                 return {'status':'Error','extstatus':'Container missing'}
+            if('homedir' not in data):
+                return {'status':'Error','extstatus':'Homedir missing'}
             if(data['user']=="error"):
                  return {'status':'Error','extstatus':data['password']}
 
-            homedir="/var/lib/lxc/{}/rootfs/var/www/".format(data['container'])
+            homedir="/var/lib/lxc/{}/rootfs/{}".format(data['container'],data['homedir'])
+            hd=""
+
+            while (homedir!=hd):
+                hd=homedir
+                homedir=hd.replace('//','/')
+            homedir=homedir.replace('../','')
+
+            if not os.path.exists(homedir):
+                return{"status":"Error","extstatus":data['homedir']+" not existing in container"}
 
             os.chmod("/var/lib/lxc/{}".format(data['container']),0o775)
             if(not os.path.exists("/var/lib/lxc/{}/rootfs/var/www/".format(data['container']))):
@@ -264,7 +276,7 @@ class user:
             os.chown("/var/lib/lxc/{}/rootfs/var/www/".format(data['container']),1000,1000)
 
             try:
-                self.cur.execute('INSERT INTO ftpuser (userid,passwd,container,homedir) VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE passwd=VALUES(passwd), container=VALUES(container)',(data['user'],data['password'],data['container'],homedir))
+                self.cur.execute('INSERT INTO ftpuser (userid,passwd,container,homedir) VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE passwd=VALUES(passwd), container=VALUES(container), homedir=VALUES(homedir)',(data['user'],data['password'],data['container'],homedir))
                 self.con.commit()
             except:
                 return {"status":"Error","extstatus":"Cannot add user "+data['user']+", Query failed"}
@@ -375,7 +387,7 @@ class domain:
 
     def updateHAProxy(self):
         try:
-            shutil.copy2('haproxy.stub', '/etc/haproxy/haproxy.cfg')
+            shutil.copy2('/etc/lxcadmin/haproxy.stub', '/etc/haproxy/haproxy.cfg')
 
             self.cur.execute("SELECT domain,www,crtfile,container FROM domains")
             rows = self.cur.fetchall()
