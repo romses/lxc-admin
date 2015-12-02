@@ -54,8 +54,16 @@ function del(name,date){
 					data:{	'container':name,
 						'date':date
 					}
-				}).done(function(data){
+				}).done(function(answer){
 					dialogItself.close();
+					switch(answer.status.toUpperCase()){
+						case "ERROR":
+							BootstrapDialog.alert({type:BootstrapDialog.TYPE_ERROR,title:"Error",message:answer.extstatus})
+							break;
+						case "WARNING":
+							BootstrapDialog.alert({type:BootstrapDialog.TYPE_WARNING,title:"Warning",message:answer.extstatus})
+							break;
+					}
 					renderTable();
 				}).error(function(){
 					dialogItself.close();
@@ -94,8 +102,16 @@ function restore(container,date){
 						'container':container,
 						'date':date
 					}
-				}).done(function(data){
+				}).done(function(answer){
 					dialogItself.close();
+					switch(answer.status.toUpperCase()){
+						case "ERROR":
+							BootstrapDialog.alert({type:BootstrapDialog.TYPE_ERROR,title:"Error",message:answer.extstatus})
+							break;
+						case "WARNING":
+							BootstrapDialog.alert({type:BootstrapDialog.TYPE_WARNING,title:"Warning",message:answer.extstatus})
+							break;
+					}
 					renderTable();
 				}).error(function(){
 					dialogItself.close();

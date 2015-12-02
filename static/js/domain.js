@@ -73,8 +73,16 @@ function enableActions(){
 				'ssl':$('#certificate').val(),
 				'container':$('#container').val()
 			}
-		}).done(function(data){
+		}).done(function(answer){
 			$('#adddomain').modal('toggle');
+			switch(answer.status.toUpperCase()){
+				case "ERROR":
+					BootstrapDialog.alert({type:BootstrapDialog.TYPE_ERROR,title:"Error",message:answer.extstatus})
+					break;
+				case "WARNING":
+					BootstrapDialog.alert({type:BootstrapDialog.TYPE_WARNING,title:"Warning",message:answer.extstatus})
+					break;
+			}
 			renderContent();
 		}).error(function(){
 		});
@@ -142,6 +150,14 @@ function deleteDomain(data){
                                         dataType:'json'
                                 }).done(function(resp){
                                         dialogItself.close();
+					switch(answer.status.toUpperCase()){
+						case "ERROR":
+							BootstrapDialog.alert({type:BootstrapDialog.TYPE_ERROR,title:"Error",message:answer.extstatus})
+							break;
+						case "WARNING":
+							BootstrapDialog.alert({type:BootstrapDialog.TYPE_WARNING,title:"Warning",message:answer.extstatus})
+							break;
+					}
                                         renderContent('container');
                                 }).error(function(resp){
                                         dialogItself.close();

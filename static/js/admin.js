@@ -112,8 +112,13 @@ function del(data){
 					url:'/api/admin/'+data,
 					method:'DELETE',
 				}).done(function(cdata){
-					if(cdata.status=="Error"){
-						BootstrapDialog.alert({message:"Error deleting "+data.user,type:BootstrapDialog.TYPE_WARNING});
+					switch(answer.status.toUpperCase()){
+						case "ERROR":
+							BootstrapDialog.alert({type:BootstrapDialog.TYPE_ERROR,title:"Error",message:answer.extstatus})
+							break;
+						case "WARNING":
+							BootstrapDialog.alert({type:BootstrapDialog.TYPE_WARNING,title:"Warning",message:answer.extstatus})
+							break;
 					}
 				});
 				renderTable();

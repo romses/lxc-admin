@@ -87,6 +87,14 @@ function enableActions(){
 		}).done(function(data){
 			$('.modal').modal('hide');
 			$("#saveuser span").addClass("hidden");
+			switch(answer.status.toUpperCase()){
+				case "ERROR":
+					BootstrapDialog.alert({type:BootstrapDialog.TYPE_ERROR,title:"Error",message:answer.extstatus})
+					break;
+				case "WARNING":
+					BootstrapDialog.alert({type:BootstrapDialog.TYPE_WARNING,title:"Warning",message:answer.extstatus})
+					break;
+			}
 			renderContent();
 		}).error(function(){
 		});
@@ -140,8 +148,16 @@ function deleteDatabase(data){
 					url:'/api/database/'+data,
 					method:'DELETE',
 					dataType:'json'
-				}).done(function(resp){
+				}).done(function(answer){
 					dialogItself.close();
+					switch(answer.status.toUpperCase()){
+						case "ERROR":
+							BootstrapDialog.alert({type:BootstrapDialog.TYPE_ERROR,title:"Error",message:answer.extstatus})
+							break;
+						case "WARNING":
+							BootstrapDialog.alert({type:BootstrapDialog.TYPE_WARNING,title:"Warning",message:answer.extstatus})
+							break;
+					}
 					renderContent('container');
 				}).error(function(resp){
 					dialogItself.close();
