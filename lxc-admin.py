@@ -267,7 +267,7 @@ def parse_config(filename):
               'DB'            :'lxc',
               'SESSION_EXPIRE': 1000*3000,
               'DOMAINNAME'    : 'macftp02.macrocom.de',
-              'PORT'          : 5000,
+              'PORT'          : 8000,
               'LOG'           : '/var/log/lxc-admin.log',
               'LOGLEVEL'      : 'WARNING',
               'IMAGE_URL'     : 'http://images.linuxcontainers.org/meta/1.0/index-system',
@@ -303,8 +303,8 @@ def duration(t_):
     return json.dumps(r)
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='lxcadmin.log')
-    logging.warn('LXC-Controller started')
     options = parse_config('/etc/lxcadmin/config.conf')
+    logging.basicConfig(filename=options['LOG'])
+    logging.warn('LXC-Controller started')
     app.config['SECRET_KEY']=options['SECRET_KEY']
     app.run(host=options['BIND'],port=int(options['PORT']))
