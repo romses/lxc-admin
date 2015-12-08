@@ -19,16 +19,16 @@
             <td id="mem"></td>
             <td>
               <div class="btn-group-xs btn-group" role="group" aria-label="Center">
-                <button id="start" type="button" class="btn btn-primary" aria-label="Left Align">
+                <button id="start" type="button" class="btn btn-primary" aria-label="Left Align" onclick=start('{{entries }}')>
                   <span class="glyphicon glyphicon glyphicon-play" aria-hidden="true"></span>
                 </button>
-                <button id="stop" type="button" class="btn btn-primary" aria-label="Left Align">
+                <button id="stop" type="button" class="btn btn-primary" aria-label="Left Align" onclick=stop('{{entries }}')>
                   <span class="glyphicon glyphicon glyphicon-stop" aria-hidden="true"></span>
                 </button>
-                <button id="backup" type="button" class="btn btn-primary" aria-label="Left Align">
+                <button id="backup" type="button" class="btn btn-primary" aria-label="Left Align" onclick=backup('{{entries }}')>
                   <span class="glyphicon glyphicon glyphicon-save" aria-hidden="true"></span>
                 </button>
-                <button id="delete" type="button" class="btn btn-danger" aria-label="Left Align">
+                <button id="delete" type="button" class="btn btn-danger" aria-label="Left Align" onclick=del('{{entries }}')>
                   <span class="glyphicon glyphicon glyphicon-trash" aria-hidden="true"></span>
                 </button>
               </div>

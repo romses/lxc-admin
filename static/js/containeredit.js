@@ -390,3 +390,119 @@ function deleteDatabase(data){
 	renderContent();
 }
 
+function start(name){
+        $.ajax({
+                url:'/api/container/'+name,
+                method:'POST',
+                data:{"action":"start"},
+                dataType:'json'
+        }).done(function(resp){
+                BootstrapDialog.alert({message:"Container "+name+" started"})
+                renderContent();
+        }).error(function(resp){
+                BootstrapDialog.alert({message:"Dafuq?!?"+resp.status})
+                $("#errorframe").html(resp.extstatus);
+                renderContent();
+        });
+}
+
+function stop(name){
+        BootstrapDialog.show({
+                message: 'Stop container '+name+"?",
+                buttons: [{
+                        label: 'Stop',
+                        cssClass: 'btn-danger',
+                        autospin: 'true',
+                        action: function(dialogItself){
+                                $.ajax({
+                                        url:'/api/container/'+name,
+                                        method:'POST',
+                                        data:{"action":"stop"},
+                                        dataType:'json'
+                                }).done(function(resp){
+                                        dialogItself.close();
+                                        renderContent();
+                                }).error(function(resp){
+                                        dialogItself.close();
+                                        BootstrapDialog.alert({message:"Dafuq?!?"+resp.status})
+                                        $("#errorframe").html(resp.status);
+                                        renderContent();
+                                });
+                        }
+                }, {
+                        label: 'Cancel',
+                        cssClass: 'btn-primary',
+                        action: function(dialogItself){
+                                dialogItself.close();
+                        }
+                }]
+        });
+}
+
+function del(name){
+        BootstrapDialog.show({
+                message: 'Delete container '+name+"?",
+                buttons: [{
+                        label: 'Delete',
+                        cssClass: 'btn-danger',
+                        autospin: 'true',
+                        action: function(dialogItself){
+                                $.ajax({
+                                        url:'/api/container/'+name,
+                                        method:'DELETE',
+                                        dataType:'json'
+                                }).done(function(resp){
+                                        dialogItself.close();
+                                        BootstrapDialog.alert({message:"Container "+name+" deleted"})
+                                        renderContent();
+                                }).error(function(resp){
+                                        dialogItself.close();
+                                        BootstrapDialog.alert({message:"Dafuq?!?"+resp.status})
+                                        $("#errorframe").html(resp.status);
+                                        renderContent();
+                                });
+                        }
+                }, {
+                        label: 'Cancel',
+                        cssClass: 'btn-primary',
+                        action: function(dialogItself){
+                                dialogItself.close();
+                        }
+                }]
+        });
+}
+
+function backup(name){
+        BootstrapDialog.show({
+                message: 'Backup container '+name+"?",
+                buttons: [{
+                        label: 'Backup',
+                        cssClass: 'btn-success',
+                        autospin: 'true',
+                        action: function(dialogItself){
+                                $.ajax({
+                                        url:'/api/container/'+name,
+                                        method:"POST",
+                                        data:{"action":"backup"},
+                                        dataType:'json'
+                                }).done(function(resp){
+                                        dialogItself.close();
+                                        BootstrapDialog.alert({message:"Container "+name+" saved"})
+                                        renderContent();
+                                }).error(function(resp){
+                                        dialogItself.close();
+                                        BootstrapDialog.alert({message:"Dafuq?!?"+resp.status})
+                                        $("#errorframe").html(resp.status);
+                                        renderContent();
+                                });
+                        }
+                }, {
+                        label: 'Cancel',
+                        cssClass: 'btn-primary',
+                        action: function(dialogItself){
+                                dialogItself.close();
+                        }
+                }]
+        });
+}
+
